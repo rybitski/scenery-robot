@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1595</width>
+    <width>770</width>
     <height>991</height>
    </rect>
   </property>
@@ -109,9 +109,15 @@
        </item>
        <item>
         <widget class="QFrame" name="map">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
-           <width>1250</width>
+           <width>0</width>
            <height>0</height>
           </size>
          </property>
@@ -187,7 +193,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>272</width>
+                 <width>0</width>
                  <height>20</height>
                 </size>
                </property>
@@ -220,7 +226,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>272</width>
+                 <width>7</width>
                  <height>20</height>
                 </size>
                </property>
@@ -253,7 +259,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>272</width>
+                 <width>0</width>
                  <height>20</height>
                 </size>
                </property>
@@ -275,7 +281,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1595</width>
+     <width>770</width>
      <height>38</height>
     </rect>
    </property>
