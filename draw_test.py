@@ -41,8 +41,8 @@ class View(QtGui.QGraphicsView):
 		
     
     def mouseReleaseEvent(self, event):
-        self.window().textbox.setText('yay')
-        self.window().textbox.setText(','.join(str((e.x(), e.y())) for e in self.points))
+        self.parent().textbox.setText('yay')
+        self.parent().textbox.setText(','.join(str((e.x(), e.y())) for e in self.points))
         self.points = []
 		
 if __name__ == '__main__':
