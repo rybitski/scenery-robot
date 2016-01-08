@@ -1,10 +1,7 @@
 #include <Servo.h>
-#include <Dhcp.h>
-#include <Dns.h>
-#include <Ethernet.h>
-#include <EthernetClient.h>
-#include <EthernetServer.h>
-#include <EthernetUdp.h>
+#include <SPI.h>
+#include <EthernetV2_0.h>
+#include <EthernetUdpV2_0.h>
 
 const int LEFT_MOTOR_PWM_PIN = 5;
 const int RIGHT_MOTOR_PWM_PIN = 6;
@@ -17,10 +14,10 @@ boolean lastConnected = false;
 String currentLine;
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE7 };
 IPAddress myIP;
-IPAddress serverIP(128, 143, 6, 188);
+IPAddress ip(192, 162, 1, 177);
 
 // set point
-EthernetClient setPointClient;
+EthernetUdp setPointClient;
 
 void setup() {
 	// put your setup code here, to run once:
