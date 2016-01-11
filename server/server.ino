@@ -59,12 +59,6 @@ void loop() {
   	// Send a placeholder for the joystick commands
   	client.println(millis());
 
-    if (!gotAMessage) {
-      Serial.println("We have a new client");
-      client.println("Hello, client!"); 
-      gotAMessage = true;
-    }
-
     // read the bytes incoming from the client:
     char thisChar = client.read();
 
