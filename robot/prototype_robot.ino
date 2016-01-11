@@ -19,13 +19,22 @@ boolean lastConnected = false;
 String currentLine;
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE7 };
 const int PORT = 29281;
-
 EthernetClient client;
 
-void setup() {
-	Serial.println("Begin setup()");
+// datastructure to hold the path
+// Only 16 long because of memorize size constraints
+// Longs are 4 bytes, * 2 * 16 = 1024 bytes
+// SuperDroid Robots Dual LS7366R Quadrature Encoder Buffer
+const int BUFFER_SIZE = 16;
+signed long pathBuffer[BUFFER_SIZE][2]; // for left and right encoder
+unsigned int pathBufferIndex = 0;
 
+void setup() {
 	Serial.begin(9600);
+	
+	Serial.println("Begin setup()");
+	Serial.println("We are the client!");
+
 
 	// Set chip select high (inactive) for SD card.
 	pinMode(SDCARD_CS_PIN, OUTPUT);
@@ -46,7 +55,7 @@ void setup() {
 	Serial.println(")");
 	Serial.println();
 
-	char serverName[] = "192.168.1.100";
+	char serverName[] = "192.168.1.103";
 	if (client.connect(serverName, PORT)) {
 		Serial.println("connected");
 		client.println("GET /search?q=arduino HTTP/1.0");
@@ -66,6 +75,14 @@ void loop() {
 	  char c = client.read();
 	  Serial.print(c);
 	}
+
+	// send the recorded path buffer back to the server
+	// client.write(pathBuffer[pathBufferIndex], 2);
+	// if (++pathBufferIndex == BUFFER_SIZE) {
+	// 	pathBufferIndex = 0;
+	// }
+	const char message[] = {'y', 'o'};
+	client.write(message);
 
 	// if the server's disconnected, stop the client:
 	if (!client.connected()) {
