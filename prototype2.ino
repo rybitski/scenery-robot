@@ -18,35 +18,36 @@ Servo rightMotor;
 boolean lastConnected = false;
 String currentLine;
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE7 };
+const int PORT = 29281;
 
 EthernetClient client;
 
 void setup() {
-	Serial.println("Starting.");
+	Serial.println("Begin setup()");
 
-	// put your setup code here, to run once:
 	Serial.begin(9600);
-
 
 	// Set chip select high (inactive) for SD card.
 	pinMode(SDCARD_CS_PIN, OUTPUT);
 	digitalWrite(SDCARD_CS_PIN, HIGH);
 
-	Serial.println("Beginning Ethernet client... ");
+	Serial.print("Configuring Ethernet client... ");
 	if (Ethernet.begin(mac) == 0) {
-		Serial.println("Failed to configure Ethernet using DHCP.");
+		Serial.println("failure (DHCP error).");
 		while (true);
 	}
-	Serial.println("Success.");
+	Serial.print("Success. ");
 
 	delay(1000); // give the Ethernet sheild a second to initialize
 
 	// get and print our IP address
-	Serial.print("Our IP address: ");
-	Serial.println(Ethernet.localIP());
+	Serial.print("(Our IP: ");
+	Serial.print(Ethernet.localIP());
+	Serial.println(")");
+	Serial.println();
 
-	char serverName[] = "192.168.1.1";
-	if (client.connect(serverName, 80)) {
+	char serverName[] = "192.168.1.100";
+	if (client.connect(serverName, PORT)) {
 		Serial.println("connected");
 		client.println("GET /search?q=arduino HTTP/1.0");
 		client.println();
@@ -55,7 +56,7 @@ void setup() {
 		Serial.println("connection failed");
 	}
 
-	Serial.println("Done with setup()!");
+	Serial.println("Done with setup()");
 }
 
 void loop() {
