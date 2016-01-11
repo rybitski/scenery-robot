@@ -27,21 +27,22 @@ void setup() {
 	// put your setup code here, to run once:
 	Serial.begin(9600);
 
-	Serial.println("Continue.");
 
 	// Set chip select high (inactive) for SD card.
 	pinMode(SDCARD_CS_PIN, OUTPUT);
 	digitalWrite(SDCARD_CS_PIN, HIGH);
 
-	// if (Ethernet.begin(mac) == 0) {
-	// 	Serial.println("Failed to configure Ethernet using DHCP.");
-	// 	while (1);
-	// }
+	Serial.println("Beginning Ethernet client...");
+	if (Ethernet.begin(mac) == 0) {
+		Serial.println("Failed to configure Ethernet using DHCP.");
+		while (true);
+	}
 
-	Ethernet.begin(mac);
+	delay(1000); // give the Ethernet sheild a second to initialize
 
 	// get and print our IP address
 	Serial.println(Ethernet.localIP());
+
 
 	Serial.println("Done with setup()!");
 }
