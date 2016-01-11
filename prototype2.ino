@@ -32,23 +32,47 @@ void setup() {
 	pinMode(SDCARD_CS_PIN, OUTPUT);
 	digitalWrite(SDCARD_CS_PIN, HIGH);
 
-	Serial.println("Beginning Ethernet client...");
+	Serial.println("Beginning Ethernet client... ");
 	if (Ethernet.begin(mac) == 0) {
 		Serial.println("Failed to configure Ethernet using DHCP.");
 		while (true);
 	}
+	Serial.println("Success.");
 
 	delay(1000); // give the Ethernet sheild a second to initialize
 
 	// get and print our IP address
+	Serial.print("Our IP address: ");
 	Serial.println(Ethernet.localIP());
 
+	char serverName[] = "192.168.1.1";
+	if (client.connect(serverName, 80)) {
+		Serial.println("connected");
+		client.println("GET /search?q=arduino HTTP/1.0");
+		client.println();
+	}
+	else {
+		Serial.println("connection failed");
+	}
 
 	Serial.println("Done with setup()!");
 }
 
 void loop() {
-	// put your main code here, to run repeatedly:
+	// if there are incoming bytes available 
+	// from the server, read them and print them:
+	if (client.available()) {
+	  char c = client.read();
+	  Serial.print(c);
+	}
 
+	// if the server's disconnected, stop the client:
+	if (!client.connected()) {
+	  Serial.println();
+	  Serial.println("Server has disconnected. Stopping client.");
+	  client.stop();
 
+	  // do nothing forevermore:
+	  while(true);
+	}
 }
