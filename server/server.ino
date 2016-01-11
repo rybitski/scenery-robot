@@ -1,3 +1,9 @@
+/*
+This program runs a server on the main computer that controls
+the robot(s). Eventually this code will be ported to Python
+with a nice GUI.
+*/
+
 #include <Servo.h>
 #include <SPI.h>
 #include <EthernetV2_0.h>
@@ -18,7 +24,6 @@ void setup() {
 
 	Serial.println("Begin setup()");
 	Serial.println("We are the server!");
-
 
 	// Set chip select high (inactive) for SD card.
 	pinMode(SDCARD_CS_PIN, OUTPUT);
@@ -51,6 +56,9 @@ void loop() {
 
   // when the client sends the first byte, say hello:
   if (client) {
+  	// Send a placeholder for the joystick commands
+  	client.println(millis());
+
     if (!gotAMessage) {
       Serial.println("We have a new client");
       client.println("Hello, client!"); 
@@ -59,8 +67,7 @@ void loop() {
 
     // read the bytes incoming from the client:
     char thisChar = client.read();
-    // echo the bytes back to the client:
-    server.write(thisChar);
+
     // echo the bytes to the server as well:
     Serial.print(thisChar);
   }

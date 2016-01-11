@@ -81,7 +81,7 @@ void loop() {
 	// if (++pathBufferIndex == BUFFER_SIZE) {
 	// 	pathBufferIndex = 0;
 	// }
-	const char message[] = {'y', 'o'};
+	const char message[] = {'B', '\n'};
 	client.write(message);
 
 	// if the server's disconnected, stop the client:
