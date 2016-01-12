@@ -48,8 +48,11 @@ typedef struct {
 } Controls;
 Controls controls; // specific instance of struct
 
-typedef enum {header, left, right} ReceiveState;
+typedef enum {receiveHeader, receiveLeft, receiveRight} ReceiveState;
 ReceiveState receiveState;
+
+typedef enum {sendHeader, sendLeft, sendRight} SendState;
+SendState sendState;
 
 void initEncoders() {
 	// Set slave selects as outputs
@@ -203,21 +206,21 @@ void setup() {
 	Serial.println("Done with setup()");
 }
 
-void parseByteFromServer(byte b) {
+void handleByteFromServer(byte b) {
 	// switch on state
 	switch (receiveState) {
-		case header:
+		case receiveHeader:
 			if (b == HEADER_BYTE) {
-				receiveState = left;
+				receiveState = receiveLeft;
 			}
 			break;
-		case left:
+		case receiveLeft:
 			controls.leftMotorPower = b;
-			receiveState = right;
+			receiveState = receiveRight;
 			break;
-		case right:
+		case receiveRight:
 			controls.rightMotorPower = b;
-			receiveState = header;
+			receiveState = receiveHeader;
 			break;
 		default:
 			;
@@ -245,7 +248,7 @@ void loop() {
 	// from the server, read them and print them:
 	if (client.available()) {
 		byte c = client.read();
-		parseByteFromServer(c);
+		handleByteFromServer(c);
 	}
 
 	// send the recorded path buffer back to the server
