@@ -174,6 +174,8 @@ void setup() {
 	Serial.println();
 
 	char serverName[] = "192.168.1.2";
+	Serial.println("Trying to connect to server at ");
+	Serial.println(serverName);
 	if (client.connect(serverName, PORT)) {
 		Serial.println("connected");
 		client.println("GET /search?q=arduino HTTP/1.0");
