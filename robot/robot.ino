@@ -228,6 +228,48 @@ void handleByteFromServer(byte b) {
 	}
 }
 
+void transmitBackToServer() {
+	// send the recorded path buffer back to the server
+	// client.write(pathBuffer[pathBufferIndex], 2);
+	// if (++pathBufferIndex == BUFFER_SIZE) {
+	// 	pathBufferIndex = 0;
+	// }
+
+	/*
+	We need a send buffer to help us send things that are larger
+	than one byte
+
+	If send state is header, send header
+	else if send state is left
+		send 4 bytes of left long
+	else if send state is right
+		send 4 bytes of right long
+	*/
+	switch (sendState) {
+		case sendHeader:
+			client.write(HEADER_BYTE);
+			sendState = sendLeft;
+			break;
+		case sendLeft:
+			client.write((encoder1count >> 6) & 0xFF);
+			client.write((encoder1count >> 4) & 0xFF);
+			client.write((encoder1count >> 2) & 0xFF);
+			client.write((encoder1count >> 0) & 0xFF);
+			sendState = sendRight;
+			break;
+		case sendRight:
+			client.write((encoder2count & 0xFF000000) >> 6);
+			client.write((encoder2count & 0x00FF0000) >> 4);
+			client.write((encoder2count & 0x0000FF00) >> 2);
+			client.write((encoder2count & 0x000000FF) >> 0);
+			sendState = sendHeader;
+			break;
+		default:
+			;
+			break;
+	}
+}
+
 void loop() {
 
 	// Retrieve current encoder counters
@@ -251,13 +293,7 @@ void loop() {
 		handleByteFromServer(c);
 	}
 
-	// send the recorded path buffer back to the server
-	// client.write(pathBuffer[pathBufferIndex], 2);
-	// if (++pathBufferIndex == BUFFER_SIZE) {
-	// 	pathBufferIndex = 0;
-	// }
-	const char message[] = {'B', '\n'};
-	client.write(encoder1count);
+	transmitBackToServer();
 
 	// if the server's disconnected, stop the client:
 	if (!client.connected()) {
