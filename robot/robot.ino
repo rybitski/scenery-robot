@@ -86,17 +86,17 @@ void initEncoders() {
 
 long readEncoder(int encoder) {
 	// Initialize temporary variables for SPI read
-	unsigned int count_1, count_2, count_3, count_4;
-	long count_value;
+	unsigned int count1, count2, count3, count4;
+	long countValue;
 
 	// Read encoder 1
 	if (encoder == 1) {
 		digitalWrite(ENCODER_1_SS_PIN, LOW);      // Begin SPI conversation
 		SPI.transfer(0x60);                     // Request count
-		count_1 = SPI.transfer(0x00);           // Read highest order byte
-		count_2 = SPI.transfer(0x00);
-		count_3 = SPI.transfer(0x00);
-		count_4 = SPI.transfer(0x00);           // Read lowest order byte
+		count1 = SPI.transfer(0x00);           // Read highest order byte
+		count2 = SPI.transfer(0x00);
+		count3 = SPI.transfer(0x00);
+		count4 = SPI.transfer(0x00);           // Read lowest order byte
 		digitalWrite(ENCODER_1_SS_PIN, HIGH);     // Terminate SPI conversation
 	}
 
@@ -104,19 +104,19 @@ long readEncoder(int encoder) {
 	else if (encoder == 2) {
 		digitalWrite(ENCODER_2_SS_PIN, LOW);      // Begin SPI conversation
 		SPI.transfer(0x60);                      // Request count
-		count_1 = SPI.transfer(0x00);           // Read highest order byte
-		count_2 = SPI.transfer(0x00);
-		count_3 = SPI.transfer(0x00);
-		count_4 = SPI.transfer(0x00);           // Read lowest order byte
+		count1 = SPI.transfer(0x00);           // Read highest order byte
+		count2 = SPI.transfer(0x00);
+		count3 = SPI.transfer(0x00);
+		count4 = SPI.transfer(0x00);           // Read lowest order byte
 		digitalWrite(ENCODER_2_SS_PIN, HIGH);     // Terminate SPI conversation
 	}
 
 	// Calculate encoder count
-	count_value = (count_1 << 8) + count_2;
-	count_value = (count_value << 8) + count_3;
-	count_value = (count_value << 8) + count_4;
+	countValue = (count1 << 8) + count2;
+	countValue = (countValue << 8) + count3;
+	countValue = (countValue << 8) + count4;
 
-	return count_value;
+	return countValue;
 }
 
 void clearEncoderCount() {
