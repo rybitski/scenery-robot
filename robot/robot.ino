@@ -49,7 +49,7 @@ ReceiveState receiveState;
 typedef enum {sendHeader, sendLeft, sendRight} SendState;
 SendState sendState;
 
-void initEncoders() {
+void initEncoders(void) {
 	// Set slave selects as outputs
 	pinMode(ENCODER_1_SS_PIN, OUTPUT);
 	pinMode(ENCODER_2_SS_PIN, OUTPUT);
@@ -119,7 +119,7 @@ long readEncoder(int encoder) {
 	return countValue;
 }
 
-void clearEncoderCount() {
+void clearEncoderCount(void) {
 	// Set encoder1's data register to 0
 	digitalWrite(ENCODER_1_SS_PIN, LOW);      // Begin SPI conversation
 	// Write to DTR
@@ -157,7 +157,7 @@ void clearEncoderCount() {
 	digitalWrite(ENCODER_2_SS_PIN, HIGH);     // Terminate SPI conversation
 }
 
-void setup() {
+void setup(void) {
 	Serial.begin(9600);
 
 	Serial.println("Begin setup()");
@@ -202,7 +202,7 @@ void setup() {
 	Serial.println("Done with setup()");
 }
 
-void rx() {
+void rx(void) {
 	// if there are incoming bytes available
 	// from the server, read them and print them:
 
@@ -233,7 +233,7 @@ void rx() {
 	}
 }
 
-void tx() {
+void tx(void) {
 	// send the recorded path buffer back to the server
 	// client.write(pathBuffer[pathBufferIndex], 2);
 	// if (++pathBufferIndex == BUFFER_SIZE) {
@@ -275,7 +275,7 @@ void tx() {
 	}
 }
 
-void loop() {
+void loop(void) {
 	// if the server's disconnected, stop the client:
 	if (!client.connected()) {
 		Serial.println("Server has disconnected. Stopping client.");
