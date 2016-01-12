@@ -26,8 +26,9 @@ signed long encoder2count = 0;
 // server stuff
 boolean lastConnected = false;
 String currentLine;
-byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE7 };
+byte mac[] = { 0x62, 0x02, 0x69, 0x9E, 0xC4, 0xFF };
 const int PORT = 29281;
+IPAddress ip(192, 168, 1, 3);
 EthernetClient client;
 
 // datastructure to hold the path
@@ -160,11 +161,8 @@ void setup() {
 	pinMode(SDCARD_CS_PIN, OUTPUT);
 	digitalWrite(SDCARD_CS_PIN, HIGH);
 
-	Serial.print("Configuring Ethernet client... ");
-	if (Ethernet.begin(mac) == 0) {
-		Serial.println("failure (DHCP error).");
-		while (true);
-	}
+	Serial.print("Configuring Ethernet client using static IP... ");
+	Ethernet.begin(mac, ip);
 	Serial.print("Success. ");
 
 	delay(1000); // give the Ethernet sheild a second to initialize
@@ -175,7 +173,7 @@ void setup() {
 	Serial.println(")");
 	Serial.println();
 
-	char serverName[] = "192.168.1.103";
+	char serverName[] = "192.168.1.2";
 	if (client.connect(serverName, PORT)) {
 		Serial.println("connected");
 		client.println("GET /search?q=arduino HTTP/1.0");

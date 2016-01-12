@@ -13,9 +13,9 @@ const int SDCARD_CS_PIN = 4;
 // server stuff
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE8 };
 const int PORT = 29281;
-IPAddress ip(192, 168, 1, 3);
+IPAddress ip(192, 168, 1, 2);
 IPAddress gateway(192,168,1, 1);
-IPAddress subnet(255, 255, 0, 0);
+IPAddress subnet(255, 255, 255, 0);
 EthernetServer server(PORT);
 boolean gotAMessage = false; // whether or not you got a message from the client yet
 
@@ -30,21 +30,18 @@ void setup() {
 	digitalWrite(SDCARD_CS_PIN, HIGH);
 
 	// start the Ethernet connection:
-	Serial.println("Trying to get an IP address using DHCP");
-	if (Ethernet.begin(mac) == 0) {
-	  Serial.println("Failed to configure Ethernet using DHCP");
-	  // initialize the ethernet device not using DHCP:
-	  Ethernet.begin(mac, ip, gateway, subnet);
-	}
-	// print your local IP address:
-	Serial.print("My IP address: ");
-	ip = Ethernet.localIP();
-	for (byte thisByte = 0; thisByte < 4; thisByte++) {
-	  // print the value of each byte of the IP address:
-	  Serial.print(ip[thisByte], DEC);
-	  Serial.print("."); 
-	}
+	Serial.print("Configuring Ethernet client using static IP... ");
+	Ethernet.begin(mac, ip);
+	Serial.print("Success. ");
+
+	delay(1000); // give the Ethernet sheild a second to initialize
+
+	// get and print our IP address
+	Serial.print("(Our IP: ");
+	Serial.print(Ethernet.localIP());
+	Serial.println(")");
 	Serial.println();
+
 	// start listening for clients
 	server.begin();
 	
