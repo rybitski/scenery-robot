@@ -207,7 +207,7 @@ void loop() {
 	// 	pathBufferIndex = 0;
 	// }
 	const char message[] = {'B', '\n'};
-	client.write(message);
+	client.write(encoder1count);
 
 	// if the server's disconnected, stop the client:
 	if (!client.connected()) {
