@@ -87,15 +87,15 @@ void initEncoders() {
 long readEncoder(int encoder) {
 	// Initialize temporary variables for SPI read
 	unsigned int count_1, count_2, count_3, count_4;
-	long count_value;  
+	long count_value;
 
 	// Read encoder 1
 	if (encoder == 1) {
 		digitalWrite(ENCODER_1_SS_PIN,LOW);      // Begin SPI conversation
 		SPI.transfer(0x60);                     // Request count
 		count_1 = SPI.transfer(0x00);           // Read highest order byte
-		count_2 = SPI.transfer(0x00);           
-		count_3 = SPI.transfer(0x00);           
+		count_2 = SPI.transfer(0x00);
+		count_3 = SPI.transfer(0x00);
 		count_4 = SPI.transfer(0x00);           // Read lowest order byte
 		digitalWrite(ENCODER_1_SS_PIN,HIGH);     // Terminate SPI conversation
 	}
@@ -105,8 +105,8 @@ long readEncoder(int encoder) {
 		digitalWrite(ENCODER_2_SS_PIN,LOW);      // Begin SPI conversation
 		SPI.transfer(0x60);                      // Request count
 		count_1 = SPI.transfer(0x00);           // Read highest order byte
-		count_2 = SPI.transfer(0x00);           
-		count_3 = SPI.transfer(0x00);           
+		count_2 = SPI.transfer(0x00);
+		count_3 = SPI.transfer(0x00);
 		count_4 = SPI.transfer(0x00);           // Read lowest order byte
 		digitalWrite(ENCODER_2_SS_PIN,HIGH);     // Terminate SPI conversation
 	}
@@ -123,11 +123,11 @@ void clearEncoderCount() {
 	// Set encoder1's data register to 0
 	digitalWrite(ENCODER_1_SS_PIN,LOW);      // Begin SPI conversation
 	// Write to DTR
-	SPI.transfer(0x98);    
+	SPI.transfer(0x98);
 	// Load data
 	SPI.transfer(0x00);  // Highest order byte
-	SPI.transfer(0x00);           
-	SPI.transfer(0x00);           
+	SPI.transfer(0x00);
+	SPI.transfer(0x00);
 	SPI.transfer(0x00);  // lowest order byte
 	digitalWrite(ENCODER_1_SS_PIN,HIGH);     // Terminate SPI conversation
 
@@ -135,17 +135,17 @@ void clearEncoderCount() {
 
 	// Set encoder1's current data register to center
 	digitalWrite(ENCODER_1_SS_PIN,LOW);      // Begin SPI conversation
-	SPI.transfer(0xE0);    
+	SPI.transfer(0xE0);
 	digitalWrite(ENCODER_1_SS_PIN,HIGH);     // Terminate SPI conversation
 
 	// Set encoder2's data register to 0
 	digitalWrite(ENCODER_2_SS_PIN,LOW);      // Begin SPI conversation
 	// Write to DTR
-	SPI.transfer(0x98);    
+	SPI.transfer(0x98);
 	// Load data
 	SPI.transfer(0x00);  // Highest order byte
-	SPI.transfer(0x00);           
-	SPI.transfer(0x00);           
+	SPI.transfer(0x00);
+	SPI.transfer(0x00);
 	SPI.transfer(0x00);  // lowest order byte
 	digitalWrite(ENCODER_2_SS_PIN,HIGH);     // Terminate SPI conversation
 
@@ -153,7 +153,7 @@ void clearEncoderCount() {
 
 	// Set encoder2's current data register to center
 	digitalWrite(ENCODER_2_SS_PIN,LOW);      // Begin SPI conversation
-	SPI.transfer(0xE0);    
+	SPI.transfer(0xE0);
 	digitalWrite(ENCODER_2_SS_PIN,HIGH);     // Terminate SPI conversation
 }
 
@@ -163,7 +163,7 @@ void setup() {
 	Serial.println("Begin setup()");
 	Serial.println("We are the client!");
 
-	initEncoders();       Serial.println("Encoders initialized.");  
+	initEncoders();       Serial.println("Encoders initialized.");
 	clearEncoderCount();  Serial.println("Encoders cleared.");
 
 	// Set chip select high (inactive) for SD card.
@@ -267,7 +267,7 @@ void transmitBackToServer() {
 }
 
 void loop() {
-	// if there are incoming bytes available 
+	// if there are incoming bytes available
 	// from the server, read them and print them:
 	if (client.available()) {
 		byte c = client.read();
@@ -275,14 +275,14 @@ void loop() {
 	}
 
 	// Retrieve current encoder counters
-	encoder1Count = readEncoder(1); 
+	encoder1Count = readEncoder(1);
 	encoder2Count = readEncoder(2);
 
 	// Output state to serial monitor
 	Serial.print("Enc1: ");
 	Serial.print(encoder1Count);
 	Serial.print(" Enc2: ");
-	Serial.print(encoder2Count); 
+	Serial.print(encoder2Count);
 
 	Serial.print(" leftMotorPower: ");
 	Serial.print(controls.leftMotorPower);
