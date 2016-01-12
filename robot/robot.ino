@@ -56,15 +56,15 @@ SendState sendState;
 
 void initEncoders() {
 	// Set slave selects as outputs
-		pinMode(slaveSelectEnc1, OUTPUT);
-		pinMode(slaveSelectEnc2, OUTPUT);
+	pinMode(slaveSelectEnc1, OUTPUT);
+	pinMode(slaveSelectEnc2, OUTPUT);
 
 	// Raise select pins
 	// Communication begins when you drop the individual select signsl
-		digitalWrite(slaveSelectEnc1,HIGH);
-		digitalWrite(slaveSelectEnc2,HIGH);
+	digitalWrite(slaveSelectEnc1,HIGH);
+	digitalWrite(slaveSelectEnc2,HIGH);
 
-		SPI.begin();
+	SPI.begin();
 
 	// Initialize encoder 1
 	//    Clock division factor: 0
@@ -90,7 +90,6 @@ void initEncoders() {
 }
 
 long readEncoder(int encoder) {
-
 	// Initialize temporary variables for SPI read
 	unsigned int count_1, count_2, count_3, count_4;
 	long count_value;  
@@ -169,8 +168,8 @@ void setup() {
 	Serial.println("Begin setup()");
 	Serial.println("We are the client!");
 
-	initEncoders();       Serial.println("Encoders Initialized...");  
-	clearEncoderCount();  Serial.println("Encoders Cleared...");
+	initEncoders();       Serial.println("Encoders initialized.");  
+	clearEncoderCount();  Serial.println("Encoders cleared.");
 
 	// Set chip select high (inactive) for SD card.
 	pinMode(SDCARD_CS_PIN, OUTPUT);
@@ -189,8 +188,10 @@ void setup() {
 	Serial.println();
 
 	char serverName[] = "192.168.1.2";
-	Serial.print("Trying to connect to server at ");
+	Serial.print("Trying to connect to ");
 	Serial.print(serverName);
+	Serial.print(":");
+	Serial.print(PORT);
 	Serial.print("... ");
 	if (client.connect(serverName, PORT)) {
 		Serial.println("connected.");
