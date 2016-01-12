@@ -56,6 +56,10 @@ void loop() {
   	// Send a placeholder for the joystick commands
   	client.println(millis());
 
+  	client.write(0xA5);
+  	client.write(103);
+  	client.write(23);
+
     // read the bytes incoming from the client:
     char thisChar = client.read();
 

@@ -39,12 +39,17 @@ const int BUFFER_SIZE = 16;
 signed long pathBuffer[BUFFER_SIZE][2]; // for left and right encoder
 unsigned int pathBufferIndex = 0;
 
+const byte HEADER_BYTE = 0xA5;
 // datastructure to hold the controls from the server
 typedef struct {
 	byte leftMotorPower; // between -127 and 127, to match Sabertooth controller
 	byte rightMotorPower; // between -127 and 127, to match Sabertooth controller
 	// byte deadManSwitch; // code to enable motors
-} controls;
+} Controls;
+Controls controls; // specific instance of struct
+
+typedef enum {header, left, right} ReceiveState;
+ReceiveState receiveState;
 
 void initEncoders() {
 	// Set slave selects as outputs
@@ -199,7 +204,25 @@ void setup() {
 }
 
 void parseByteFromServer(byte b) {
-
+	// switch on state
+	switch (receiveState) {
+		case header:
+			if (b == HEADER_BYTE) {
+				receiveState = left;
+			}
+			break;
+		case left:
+			controls.leftMotorPower = b;
+			receiveState = right;
+			break;
+		case right:
+			controls.rightMotorPower = b;
+			receiveState = header;
+			break;
+		default:
+			;
+			break;
+	}
 }
 
 void loop() {
@@ -211,7 +234,12 @@ void loop() {
 	Serial.print("Enc1: ");
 	Serial.print(encoder1count);
 	Serial.print(" Enc2: ");
-	Serial.println(encoder2count); 
+	Serial.print(encoder2count); 
+
+	Serial.print(" leftMotorPower: ");
+	Serial.print(controls.leftMotorPower);
+	Serial.print(" rightMotorPower: ");
+	Serial.println(controls.rightMotorPower);
 
 	// if there are incoming bytes available 
 	// from the server, read them and print them:
