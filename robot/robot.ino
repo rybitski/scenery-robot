@@ -41,9 +41,9 @@ unsigned int pathBufferIndex = 0;
 
 // datastructure to hold the controls from the server
 typedef struct {
-	byte leftMotorPower,
-	byte rightMotorPower
-	//, byte deadManSwitch // code to enable motors
+	byte leftMotorPower; // between -127 and 127, to match Sabertooth controller
+	byte rightMotorPower; // between -127 and 127, to match Sabertooth controller
+	// byte deadManSwitch; // code to enable motors
 } controls;
 
 void initEncoders() {
@@ -199,7 +199,7 @@ void setup() {
 }
 
 void parseByteFromServer(byte b) {
-	
+
 }
 
 void loop() {
