@@ -174,8 +174,9 @@ void setup() {
 	Serial.println();
 
 	char serverName[] = "192.168.1.2";
-	Serial.println("Trying to connect to server at ");
-	Serial.println(serverName);
+	Serial.print("Trying to connect to server at ");
+	Serial.print(serverName);
+	Serial.println(".");
 	if (client.connect(serverName, PORT)) {
 		Serial.println("connected");
 		client.println("GET /search?q=arduino HTTP/1.0");
@@ -194,7 +195,10 @@ void loop() {
 	encoder1count = readEncoder(1); 
 	encoder2count = readEncoder(2);
 
-	Serial.print("Enc1: "); Serial.print(encoder1count); Serial.print(" Enc2: "); Serial.println(encoder2count); 
+	Serial.print("Enc1: ");
+	Serial.print(encoder1count);
+	Serial.print(" Enc2: ");
+	Serial.println(encoder2count); 
 
 	// if there are incoming bytes available 
 	// from the server, read them and print them:
