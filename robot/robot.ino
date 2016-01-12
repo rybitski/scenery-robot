@@ -39,6 +39,13 @@ const int BUFFER_SIZE = 16;
 signed long pathBuffer[BUFFER_SIZE][2]; // for left and right encoder
 unsigned int pathBufferIndex = 0;
 
+// datastructure to hold the controls from the server
+typedef struct {
+	byte leftMotorPower,
+	byte rightMotorPower
+	//, byte deadManSwitch // code to enable motors
+} controls;
+
 void initEncoders() {
 	// Set slave selects as outputs
 		pinMode(slaveSelectEnc1, OUTPUT);
@@ -191,6 +198,10 @@ void setup() {
 	Serial.println("Done with setup()");
 }
 
+void parseByteFromServer(byte b) {
+	
+}
+
 void loop() {
 
 	// Retrieve current encoder counters
@@ -205,8 +216,8 @@ void loop() {
 	// if there are incoming bytes available 
 	// from the server, read them and print them:
 	if (client.available()) {
-		char c = client.read();
-		Serial.print(c);
+		byte c = client.read();
+		parseByteFromServer(c);
 	}
 
 	// send the recorded path buffer back to the server
