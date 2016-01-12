@@ -19,6 +19,9 @@ IPAddress subnet(255, 255, 255, 0);
 EthernetServer server(PORT);
 boolean gotAMessage = false; // whether or not you got a message from the client yet
 
+typedef enum {receiveHeader, receiveLeft, receiveRight} ReceiveState;
+ReceiveState receiveState;
+
 long leftOutput = 0L;
 long rightOutput = 0L;
 
@@ -64,15 +67,23 @@ void loop() {
   	client.write(23);
 
     // read the bytes incoming from the client:
-	if (client.read() == 0xA5) {
-		leftOutput = client.read() << 6;
-		leftOutput |= client.read() << 4;
-		leftOutput |= client.read() << 2;
-		leftOutput |= client.read() << 0;
-		rightOutput = client.read() << 6;
-		rightOutput |= client.read() << 4;
-		rightOutput |= client.read() << 2;
-		rightOutput |= client.read() << 0;
+	switch (receiveState) {
+		case receiveHeader:
+			if (b == HEADER_BYTE) {
+				receiveState = receiveLeft;
+			}
+			break;
+		case receiveLeft:
+			controls.leftMotorPower = b;
+			receiveState = receiveRight;
+			break;
+		case receiveRight:
+			controls.rightMotorPower = b;
+			receiveState = receiveHeader;
+			break;
+		default:
+			;
+			break;
 	}
 
     // echo the bytes to the server as well:
