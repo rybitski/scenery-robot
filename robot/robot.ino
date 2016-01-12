@@ -202,29 +202,38 @@ void setup() {
 	Serial.println("Done with setup()");
 }
 
-void handleByteFromServer(byte b) {
-	// switch on state
-	switch (receiveState) {
-		case receiveHeader:
-			if (b == HEADER_BYTE) {
-				receiveState = receiveLeft;
-			}
-			break;
-		case receiveLeft:
-			controls.leftMotorPower = b;
-			receiveState = receiveRight;
-			break;
-		case receiveRight:
-			controls.rightMotorPower = b;
-			receiveState = receiveHeader;
-			break;
-		default:
-			;
-			break;
+void rx() {
+	// if there are incoming bytes available
+	// from the server, read them and print them:
+
+	// Returns the number of bytes available for reading (that is,
+	// the amount of data that has been written to the client by the
+	// server it is connected to).
+	if (client.available()) { // if there's something to read...
+		byte b = client.read();
+		// switch on state
+		switch (receiveState) {
+			case receiveHeader:
+				if (b == HEADER_BYTE) {
+					receiveState = receiveLeft;
+				}
+				break;
+			case receiveLeft:
+				controls.leftMotorPower = b;
+				receiveState = receiveRight;
+				break;
+			case receiveRight:
+				controls.rightMotorPower = b;
+				receiveState = receiveHeader;
+				break;
+			default:
+				;
+				break;
+		}
 	}
 }
 
-void transmitBackToServer() {
+void tx() {
 	// send the recorded path buffer back to the server
 	// client.write(pathBuffer[pathBufferIndex], 2);
 	// if (++pathBufferIndex == BUFFER_SIZE) {
@@ -267,12 +276,17 @@ void transmitBackToServer() {
 }
 
 void loop() {
-	// if there are incoming bytes available
-	// from the server, read them and print them:
-	if (client.available()) {
-		byte c = client.read();
-		handleByteFromServer(c);
+	// if the server's disconnected, stop the client:
+	if (!client.connected()) {
+		Serial.println("Server has disconnected. Stopping client.");
+		client.stop();
+
+		// do nothing forevermore:
+		while(true);
 	}
+
+	rx();
+	tx();
 
 	// Retrieve current encoder counters
 	encoder1Count = readEncoder(1);
@@ -288,15 +302,4 @@ void loop() {
 	Serial.print(controls.leftMotorPower);
 	Serial.print(" rightMotorPower: ");
 	Serial.println(controls.rightMotorPower);
-
-	transmitBackToServer();
-
-	// if the server's disconnected, stop the client:
-	if (!client.connected()) {
-		Serial.println("Server has disconnected. Stopping client.");
-		client.stop();
-
-		// do nothing forevermore:
-		while(true);
-	}
 }

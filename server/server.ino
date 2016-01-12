@@ -14,7 +14,7 @@ const int SDCARD_CS_PIN = 4;
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE8 };
 const int PORT = 29281;
 IPAddress ip(192, 168, 1, 2);
-IPAddress gateway(192,168,1, 1);
+IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 EthernetServer server(PORT);
 boolean gotAMessage = false; // whether or not you got a message from the client yet
@@ -55,10 +55,14 @@ void setup() {
 }
 
 void loop() {
-  EthernetClient client = server.available();
+	// Gets a client that is connected to the server and has data
+	// available for reading. The connection persists when the returned
+	// client object goes out of scope; you can close it by calling 
+	// client.stop().
+	EthernetClient client = server.available();
 
-  // when the client sends the first byte, say hello:
-  if (client) {
+  	// when the client sends the first byte, say hello:
+	if (client) {
   	// Send a placeholder for the joystick commands
   	client.println(millis());
 
