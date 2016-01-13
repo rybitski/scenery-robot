@@ -232,12 +232,14 @@ void tx(void) {
 	// left:encoder1Count
 	// right:encoder2Count
 
-	client.print("time:");
-	client.println(millis());
-	client.print("left:");
-	client.println(encoder1Count);
-	client.print("right:");
-	client.println(encoder2Count);
+	//'{"right": 44, "left": 23, "time": 134234}'
+	client.print("{\"time\": ");
+	client.print(millis());
+	client.print(", \"left\": ");
+	client.print(encoder1Count);
+	client.print(", \"right\": ");
+	client.print(encoder2Count);
+	client.println("}");
 }
 
 void loop(void) {
