@@ -22,9 +22,6 @@ boolean gotAMessage = false; // whether or not you got a message from the client
 typedef enum {receiveHeader, receiveLeft, receiveRight} ReceiveState;
 ReceiveState receiveState;
 
-long leftOutput = 0L;
-long rightOutput = 0L;
-
 void setup() {
 	Serial.begin(9600);
 
@@ -63,37 +60,14 @@ void loop() {
 
   	// when the client sends the first byte, say hello:
 	if (client) {
-  	// Send a placeholder for the joystick commands
-  	client.println(millis());
+	  	// Send a placeholder for the joystick commands
+	  	client.println(millis());
 
-  	client.write(0xA5);
-  	client.write(103);
-  	client.write(23);
+	  	// client.write(0xA5);
+	  	// client.write(103);
+	  	// client.write(23);
 
-    // read the bytes incoming from the client:
-	switch (receiveState) {
-		case receiveHeader:
-			if (b == HEADER_BYTE) {
-				receiveState = receiveLeft;
-			}
-			break;
-		case receiveLeft:
-			controls.leftMotorPower = b;
-			receiveState = receiveRight;
-			break;
-		case receiveRight:
-			controls.rightMotorPower = b;
-			receiveState = receiveHeader;
-			break;
-		default:
-			;
-			break;
-	}
-
-    // echo the bytes to the server as well:
-    Serial.print("left: ");
-    Serial.print(leftOutput);
-    Serial.print("\tright: ");
-    Serial.println(rightOutput);
+	  	char thisChar = client.read();
+	  	Serial.print(thisChar);
   }
 }

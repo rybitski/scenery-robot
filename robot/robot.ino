@@ -43,12 +43,6 @@ typedef struct {
 } Controls;
 Controls controls; // specific instance of struct
 
-typedef enum {receiveHeader, receiveLeft, receiveRight} ReceiveState;
-ReceiveState receiveState;
-
-typedef enum {sendHeader, sendLeft, sendRight} SendState;
-SendState sendState;
-
 void initEncoders(void) {
 	// Set slave selects as outputs
 	pinMode(ENCODER_1_SS_PIN, OUTPUT);
@@ -212,67 +206,38 @@ void rx(void) {
 	if (client.available()) { // if there's something to read...
 		byte b = client.read();
 		// switch on state
-		switch (receiveState) {
-			case receiveHeader:
-				if (b == HEADER_BYTE) {
-					receiveState = receiveLeft;
-				}
-				break;
-			case receiveLeft:
-				controls.leftMotorPower = b;
-				receiveState = receiveRight;
-				break;
-			case receiveRight:
-				controls.rightMotorPower = b;
-				receiveState = receiveHeader;
-				break;
-			default:
-				;
-				break;
-		}
+		// switch (receiveState) {
+		// 	case receiveHeader:
+		// 		if (b == HEADER_BYTE) {
+		// 			receiveState = receiveLeft;
+		// 		}
+		// 		break;
+		// 	case receiveLeft:
+		// 		controls.leftMotorPower = b;
+		// 		receiveState = receiveRight;
+		// 		break;
+		// 	case receiveRight:
+		// 		controls.rightMotorPower = b;
+		// 		receiveState = receiveHeader;
+		// 		break;
+		// 	default:
+		// 		;
+		// 		break;
+		// }
 	}
 }
 
 void tx(void) {
-	// send the recorded path buffer back to the server
-	// client.write(pathBuffer[pathBufferIndex], 2);
-	// if (++pathBufferIndex == BUFFER_SIZE) {
-	// 	pathBufferIndex = 0;
-	// }
+	// time:millis()
+	// left:encoder1Count
+	// right:encoder2Count
 
-	/*
-	We need a send buffer to help us send things that are larger
-	than one byte
-
-	If send state is header, send header
-	else if send state is left
-		send 4 bytes of left long
-	else if send state is right
-		send 4 bytes of right long
-	*/
-	switch (sendState) {
-		case sendHeader:
-			client.write(HEADER_BYTE);
-			sendState = sendLeft;
-			break;
-		case sendLeft:
-			client.write((encoder1Count >> 6) & 0xFF);
-			client.write((encoder1Count >> 4) & 0xFF);
-			client.write((encoder1Count >> 2) & 0xFF);
-			client.write((encoder1Count >> 0) & 0xFF);
-			sendState = sendRight;
-			break;
-		case sendRight:
-			client.write((encoder2Count & 0xFF000000) >> 6);
-			client.write((encoder2Count & 0x00FF0000) >> 4);
-			client.write((encoder2Count & 0x0000FF00) >> 2);
-			client.write((encoder2Count & 0x000000FF) >> 0);
-			sendState = sendHeader;
-			break;
-		default:
-			;
-			break;
-	}
+	client.print("time:");
+	client.println(millis());
+	client.print("left:");
+	client.println(encoder1Count);
+	client.print("right:");
+	client.println(encoder2Count);
 }
 
 void loop(void) {
