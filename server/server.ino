@@ -61,8 +61,7 @@ void loop() {
   	// when the client sends the first byte, say hello:
 	if (client) {
 	  	// Send a placeholder for the joystick commands
-	  	client.println(millis());
-
+	  	
 	  	// client.write(0xA5);
 	  	// client.write(103);
 	  	// client.write(23);
