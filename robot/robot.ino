@@ -43,6 +43,8 @@ typedef struct {
 } Controls;
 Controls controls; // specific instance of struct
 
+String currentLine = "";
+
 void initEncoders(void) {
 	// Set slave selects as outputs
 	pinMode(ENCODER_1_SS_PIN, OUTPUT);
@@ -196,15 +198,28 @@ void setup(void) {
 	Serial.println("Done with setup()");
 }
 
-void rx(void) {
-	// if there are incoming bytes available
-	// from the server, read them and print them:
+void loop(void) {
+	// if the server's disconnected, stop the client:
+	if (!client.connected()) {
+		Serial.println("Server has disconnected. Stopping client.");
+		client.stop();
 
-	// Returns the number of bytes available for reading (that is,
-	// the amount of data that has been written to the client by the
-	// server it is connected to).
+		// do nothing forevermore:
+		while(true);
+	}
+
+	// leftCommand:rightCommand
+	// 0xA5, leftCommand, rightCommand, 0x43
+
 	if (client.available()) { // if there's something to read...
 		byte b = client.read();
+		currentLine += b;
+		if (b == '\n') {
+			Serial.print("#####");
+			Serial.print(currentLine);
+			Serial.print("#####");
+		}
+
 		// switch on state
 		// switch (receiveState) {
 		// 	case receiveHeader:
@@ -225,35 +240,14 @@ void rx(void) {
 		// 		break;
 		// }
 	}
-}
 
-void tx(void) {
-	// time:millis()
-	// left:encoder1Count
-	// right:encoder2Count
-
-	//'{"right": 44, "left": 23, "time": 134234}'
-	client.print("{\"time\": ");
-	client.print(millis());
-	client.print(", \"left\": ");
-	client.print(encoder1Count);
-	client.print(", \"right\": ");
-	client.print(encoder2Count);
-	client.println("}");
-}
-
-void loop(void) {
-	// if the server's disconnected, stop the client:
-	if (!client.connected()) {
-		Serial.println("Server has disconnected. Stopping client.");
-		client.stop();
-
-		// do nothing forevermore:
-		while(true);
-	}
-
-	rx();
-	tx();
+	// client.print("{\"time\": ");
+	// client.print(millis());
+	// client.print(", \"left\": ");
+	// client.print(encoder1Count);
+	// client.print(", \"right\": ");
+	// client.print(encoder2Count);
+	// client.println("}");
 
 	// Retrieve current encoder counters
 	encoder1Count = readEncoder(1);
