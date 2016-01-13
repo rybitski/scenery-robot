@@ -182,10 +182,11 @@ class XInputJoystick(event.EventDispatcher):
         if not state:
             raise RuntimeError(
                 "Joystick %d is not connected" % self.device_number)
-        if state.packet_number != self._last_state.packet_number:
+        #if state.packet_number != self._last_state.packet_number:
             # state has changed, handle the change
-            self.update_packet_count(state)
-            self.handle_changed_state(state)
+        #self.update_packet_count(state)
+		
+        self.handle_changed_state(state)
         self._last_state = state
 
     def update_packet_count(self, state):
@@ -199,7 +200,8 @@ class XInputJoystick(event.EventDispatcher):
 
     def handle_changed_state(self, state):
         "Dispatch various events as a result of the state changing"
-        self.dispatch_event('on_state_changed', state)
+        #self.dispatch_event('on_state_changed', state)
+        #print("handle_changed_state")
         self.dispatch_axis_events(state)
         self.dispatch_button_events(state)
 
@@ -207,21 +209,25 @@ class XInputJoystick(event.EventDispatcher):
         # axis fields are everything but the buttons
         axis_fields = dict(XINPUT_GAMEPAD._fields_)
         axis_fields.pop('buttons')
+        #print("Axis fields", axis_fields)
         for axis, type in list(axis_fields.items()):
-            old_val = getattr(self._last_state.gamepad, axis)
+            #old_val = getattr(self._last_state.gamepad, axis)
             new_val = getattr(state.gamepad, axis)
             data_size = ctypes.sizeof(type)
-            old_val = self.translate(old_val, data_size)
+            #old_val = self.translate(old_val, data_size)
             new_val = self.translate(new_val, data_size)
-
+            #print("new_val", new_val)
+			
+			
             # an attempt to add deadzones and dampen noise
             # done by feel rather than following http://msdn.microsoft.com/en-gb/library/windows/desktop/ee417001%28v=vs.85%29.aspx#dead_zone
             # ags, 2014-07-01
             #if ((old_val != new_val and (new_val > 0.08000000000000000 or new_val < -0.08000000000000000) and abs(old_val - new_val) > 0.00000000500000000) or
             #   (axis == 'right_trigger' or axis == 'left_trigger') and new_val == 0 and abs(old_val - new_val) > 0.00000000500000000):
-            if ((old_val != new_val and (new_val > 0.04000000000000000 or new_val < -0.04000000000000000) and abs(old_val - new_val) > 0.0000000500000000) or
-               (axis == 'right_trigger' or axis == 'left_trigger') and new_val == 0 and abs(old_val - new_val) > 0.00000000500000000):
-                self.dispatch_event('on_axis', axis, new_val)
+            #if ((old_val != new_val and (new_val > 0.04000000000000000 or new_val < -0.04000000000000000) and abs(old_val - new_val) > 0.0000000500000000) or
+            #   (axis == 'right_trigger' or axis == 'left_trigger') and new_val == 0 and abs(old_val - new_val) > 0.00000000500000000):
+            #if (new_val > 0.01 or new_val < -0.01):
+            self.dispatch_event('on_axis', axis, new_val)
 
     def dispatch_button_events(self, state):
         changed = state.gamepad.buttons ^ self._last_state.gamepad.buttons

@@ -1,8 +1,10 @@
-from PyQt4 import QtGui # Import QtGui module
+from PyQt4 import QtGui, QtCore # Import QtGui module
 from PyQt4.QtCore import QThread
 import sys				# Allows for command line arguments to be passed in
 import time
 import main_window_robot		# Layout file
+import struct
+
 from RoboControl import RoboControl
 from RoboNetwork import RoboNetwork
 
@@ -27,36 +29,65 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 		# Initiate controlling applications
 		self.control = RoboControl(DEBUG=True)
-		self.network = RoboNetwork('192.168.1.2', 29281, 20, 5, DEBUG=True)
+		self.network = RoboNetwork('192.168.1.2', 29281, 3, 15, DEBUG=True)
 		
 		# Set state flags
 		self.controller_connected = False
 		self.network_connected = False
 		
+		# Overall state
 		self.state = States.DISCONNECTED
 		
+		# Start main thread
 		self.mainThread = MainThread(self)
 		self.mainThread.start()
 	
 	def connect_buttons(self):
+		"""
+		Connect buttons to methods
+		"""
 		self.controllerConnect.clicked.connect(self.connect_to_controller)
 		self.serverStart.clicked.connect(self.connect_to_network)
 	
 	def connect_to_controller(self):
+		"""
+		Connects to the controller and returns if connection succeeded
+		"""
 		self.controller_connected = self.control.connect()
 		if self.controller_connected:
-			 #self.controllerStatus.setText("Controller: Connected!")
 			 self.control.start()
 		else:
 			pass
-			#self.controllerStatus.setText("Controller: Failed to connect")
 		return self.controller_connected
 		
 	def connect_to_network(self):
+		"""
+		Opens server to connect to client
+		"""
+		print("Attempting to connect to client")
 		self.network_connected = self.network.connect()
+		if self.network_connected:
+			print("client connected!")
+		else:
+			print("timeout connection")
 		return self.network_connected
-		
+	
+	def keyPressEvent(self, qKeyEvent):
+		if qKeyEvent.key() == QtCore.Qt.Key_Return: 
+			print('Enter pressed')
+			print("sending:", self.control.left_value, self.control.right_value)
+			data = '\xA5' + struct.pack('bb', -127, -127)
+			data1 = '\xA5\x81\x81'
+			print(data)
+			print(data1)
+			#self.network.send_command(self.control.left_value, self.control.right_value)
+		else:
+			super().keyPressEvent(qKeyEvent)
+	
 	def closeEvent(self, event):
+		"""
+		Overriden close event that will terminate main thread
+		"""
 		self.mainThread.running = False
 		super(RobotApp, self).closeEvent(event)
 		
@@ -71,20 +102,13 @@ class MainThread(QThread):
 		self.wait()
 
 	def run(self):
-		self.app.connect_to_controller()
 		while self.running:
-			if self.app.state == States.MANUAL:
-				if len(self.app.control.commands) > 0:
-					command = self.app.control.commands.popleft()
-					print(command)
-					if network.connected:
-						self.app.network.conn.send(command[0])
-						self.app.network.conn.send(command[1])
-			else:
-				if len(self.app.control.commands) > 0:
-					command = self.app.control.commands.popleft()
-					self.app.network.send_command(command)
-		
+			if self.app.controller_connected and self.app.network_connected:
+				time.sleep(0.1)
+				print("sending:", self.app.control.left_value, self.app.control.right_value)
+				self.app.network.send_command(self.app.control.left_value, self.app.control.right_value)
+				
+				
 		# Main thread has ended, end controller and network threads if they are running
 		self.app.control.close()
 		self.app.network.close()

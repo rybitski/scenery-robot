@@ -15,13 +15,13 @@ class RoboControl(threading.Thread):
 		threading.Thread.__init__(self)
 		# Set debugging flag
 		self.debug = DEBUG
-		
-		# Grabs 1st available gamepad, logging changes to the screen
-		self.joysticks = XInputJoystick.enumerate_devices()
-		self.device_numbers = list(map(attrgetter('device_number'), self.joysticks))
 	
 		# Setup state as normal
 		self.state = 'normal'
+		
+		# Setup variables to maintain real time left and right axis values
+		self.left_value = 0
+		self.right_value = 0
 		
 		# Setup connection flag as initially False
 		self.connected = False
@@ -36,14 +36,17 @@ class RoboControl(threading.Thread):
 		# Maps human-readable syntax to internal button number
 		self.inv_button_map = {v: k for k, v in self.button_map.items()}
 		
-		if self.debug:
-			print('found %d controller devices: %s' % (len(self.joysticks), self.device_numbers))
-
+		self.joysticks = XInputJoystick.enumerate_devices()
+		self.j = None
+		
 		# Flag for running thread to exit
 		self.exit = False
 		
 		# Queue of commands
 		self.commands = deque()
+		
+	def is_connected(self):
+		return self.connected
 		
 	def connect(self):
 		"""
@@ -51,6 +54,13 @@ class RoboControl(threading.Thread):
 		Returns True if connection succeeded
 		Returns False if connection fails
 		"""
+		
+		# Grabs 1st available gamepad, logging changes to the screen
+		self.joysticks = XInputJoystick.enumerate_devices()
+		self.device_numbers = list(map(attrgetter('device_number'), self.joysticks))
+		if self.debug:
+			print('found %d controller devices: %s' % (len(self.joysticks), self.device_numbers))
+			
 		# Attempt to connect to first joystick
 		if not self.joysticks:
 			if self.debug:
@@ -84,35 +94,21 @@ class RoboControl(threading.Thread):
 		def on_axis(axis, value):
 			left_speed = 0
 			right_speed = 0
-
+			
 			if self.state == 'record':
 				if axis == 'l_thumb_y':
-					"""
-					self.l_joy_record.append(value)
-					if len(self.r_joy_record) > 0:
-						self.r_joy_record.append(self.r_joy_record[-1])
-					else:
-						self.r_joy_record.append(0)
-					"""
+					
 					# Maps analog values of -0.5 to 0.5 to -127 to 127 for motor control
 					value_convert = int(round(sensitivity_scale(value, 0.5, -0.5, 0.5, -127, 127)))
 					
 					# Account for noisy deadzone in middle of joysticks
 					if (abs(value_convert) <= 10):
 						value_convert = 0
-						
-					# Add command to command queue
-					self.commands.append(
-						('L', value_convert)
-					)
+					
+					self.left_value = value_convert
+					
 				elif axis == 'r_thumb_y':
-					"""
-					self.r_joy_record.append(value)
-					if len(self.l_joy_record) > 0:
-						self.l_joy_record.append(self.l_joy_record[-1])
-					else:
-						self.l_joy_record.append(0)
-					"""
+					
 					# Maps analog values of -0.5 to 0.5 to -127 to 127 for motor control
 					value_convert = int(round(sensitivity_scale(value, 0.5, -0.5, 0.5, -127, 127)))
 					
@@ -120,10 +116,7 @@ class RoboControl(threading.Thread):
 					if (abs(value_convert) <= 10):
 						value_convert = 0
 						
-					# Add command to command queue
-					self.commands.append(
-						('R', value_convert)
-					)
+					self.right_value = value_convert
 					
 			if axis == "left_trigger":
 				left_speed = value
@@ -150,6 +143,7 @@ class RoboControl(threading.Thread):
 		while not self.exit:
 			try:
 				# Register any controller events
+				#print("dispatching")
 				self.j.dispatch_events()
 			except RuntimeError:
 				# Controller was disconnected, exit controller
@@ -158,6 +152,14 @@ class RoboControl(threading.Thread):
 				self.exit = True
 			time.sleep(0.01)
 		print("Joystick shutting down!")
+		
+	def close(self):
+		if self.connected:
+			self.connected = False
+			self.exit = True
+			return True
+		else:
+			return False
 	
 def sensitivity_scale(x_in, sensitivity, original_min, original_max, desired_min, desired_max):
 	"""

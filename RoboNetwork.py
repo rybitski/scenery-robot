@@ -6,6 +6,9 @@
 # pip install --upgrade http://pyglet.googlecode.com/archive/tip.zip
 import threading
 import socket
+import json
+import binascii
+import struct
 
 class RoboNetwork(threading.Thread):
 	def __init__(self, ip, port, buff_size, timeout, DEBUG = False):
@@ -22,8 +25,7 @@ class RoboNetwork(threading.Thread):
 		
 		# Create socket
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		# Bind socket to ip and port
-		self.s.bind((self.TCP_IP, self.TCP_PORT))
+
 		
 		# Set flags
 		self.connected = False
@@ -37,6 +39,9 @@ class RoboNetwork(threading.Thread):
 		Attempts to listen and allow a client to connect
 		Returns True if client connected, False if socket timesout
 		"""
+		# Bind socket to ip and port
+		self.s.bind((self.TCP_IP, self.TCP_PORT))
+		
 		# Set up socket to listen
 		self.s.listen(1)
 	
@@ -50,7 +55,15 @@ class RoboNetwork(threading.Thread):
 			self.connected = False
 		
 		return self.connected
-		
+	
+	def send_command(self, left_value, right_value):
+		"""
+		Sends command as byte string with A5 as header 
+		"""
+		data = '\xA5' + struct.pack('bb', left_value, right_value)
+		self.conn.send(data)
+		#data = conn.recv(3)
+	
 	def run(self):
 		"""
 		Main thread run method
