@@ -208,37 +208,17 @@ void loop(void) {
 		while(true);
 	}
 
-	// leftCommand:rightCommand
-	// 0xA5, leftCommand, rightCommand, 0x43
+	// 0xA5, leftCommand, rightCommand
 
-	if (client.available()) { // if there's something to read...
-		byte b = client.read();
-		currentLine += b;
-		if (b == '\n') {
-			Serial.print("#####");
-			Serial.print(currentLine);
-			Serial.print("#####");
+	if (client.available()) { // if RX buffer has stuff in it
+		if (client.read() == HEADER_BYTE) {
+			controls.leftMotorPower = client.read();
+			controls.rightMotorPower = client.read();
 		}
-
-		// switch on state
-		// switch (receiveState) {
-		// 	case receiveHeader:
-		// 		if (b == HEADER_BYTE) {
-		// 			receiveState = receiveLeft;
-		// 		}
-		// 		break;
-		// 	case receiveLeft:
-		// 		controls.leftMotorPower = b;
-		// 		receiveState = receiveRight;
-		// 		break;
-		// 	case receiveRight:
-		// 		controls.rightMotorPower = b;
-		// 		receiveState = receiveHeader;
-		// 		break;
-		// 	default:
-		// 		;
-		// 		break;
-		// }
+	} else {
+		Serial.println("Server has not written any bytes. Setting both motors to 0.");
+		controls.leftMotorPower = 0;
+		controls.rightMotorPower = 0;
 	}
 
 	// client.print("{\"time\": ");

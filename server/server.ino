@@ -61,10 +61,13 @@ void loop() {
   	// when the client sends the first byte, say hello:
 	if (client) {
 	  	// Send a placeholder for the joystick commands
-	  	
-	  	// client.write(0xA5);
-	  	// client.write(103);
-	  	// client.write(23);
+
+	  	if (millis() > 10000) {
+	  		Serial.println("Sending commands now!");
+			client.write(0xA5);
+			client.write(103);
+			client.write(23);
+		}
 
 	  	char thisChar = client.read();
 	  	Serial.print(thisChar);
