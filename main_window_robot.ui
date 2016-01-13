@@ -146,27 +146,13 @@
          </item>
          <item row="1" column="0">
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="3" column="0">
-            <widget class="QPushButton" name="queueStop">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
+           <item row="1" column="4">
+            <widget class="QLabel" name="label">
              <property name="text">
-              <string>Stop</string>
+              <string>Conroller: Not Connected</string>
              </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QPushButton" name="queueLoad">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Load Queue</string>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -182,7 +168,31 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="3" column="3">
+            <widget class="QPushButton" name="portSpecify">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Specify Port</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="queueLoad">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Load Queue</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
             <widget class="QPushButton" name="ipSpecify">
              <property name="font">
               <font>
@@ -194,7 +204,19 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="2">
+           <item row="3" column="0">
+            <widget class="QPushButton" name="queueStop">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Stop</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
             <widget class="QPushButton" name="controllerConnect">
              <property name="font">
               <font>
@@ -203,18 +225,6 @@
              </property>
              <property name="text">
               <string>Connect Controller</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QPushButton" name="portSpecify">
-             <property name="font">
-              <font>
-               <pointsize>10</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>Specify Port</string>
              </property>
             </widget>
            </item>
@@ -242,7 +252,7 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="3">
+           <item row="0" column="4">
             <widget class="QPushButton" name="serverStart">
              <property name="font">
               <font>
@@ -254,11 +264,44 @@
              </property>
             </widget>
            </item>
+           <item row="3" column="4">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Server: Not Connected</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1">
+            <widget class="QPushButton" name="pushButton">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Record New Path</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="pushButton_2">
+             <property name="font">
+              <font>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Manual Control Mode</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>
         <zorder>graphicsView</zorder>
-        <zorder>frame</zorder>
         <zorder></zorder>
        </widget>
       </item>
@@ -407,9 +450,6 @@
      </widget>
     </item>
    </layout>
-   <zorder>checkWorkingLabel</zorder>
-   <zorder>frame_3</zorder>
-   <zorder>graphicsView</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
