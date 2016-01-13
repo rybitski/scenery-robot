@@ -147,7 +147,7 @@
          <item row="1" column="0">
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="1" column="4">
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="controlConnectIndicator">
              <property name="text">
               <string>Conroller: Not Connected</string>
              </property>
@@ -265,7 +265,7 @@
             </widget>
            </item>
            <item row="3" column="4">
-            <widget class="QLabel" name="label_2">
+            <widget class="QLabel" name="serverConnectIndicator">
              <property name="text">
               <string>Server: Not Connected</string>
              </property>
@@ -275,7 +275,7 @@
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="recordPath">
              <property name="font">
               <font>
                <pointsize>10</pointsize>
@@ -287,7 +287,7 @@
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_2">
+            <widget class="QPushButton" name="manualControl">
              <property name="font">
               <font>
                <pointsize>10</pointsize>
