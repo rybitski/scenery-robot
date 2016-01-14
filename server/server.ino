@@ -56,12 +56,12 @@ void loop() {
 	if (packetSize) {
 		// read the packet into the buffer
 		Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
-		Serial.print("Our time: ");
-		Serial.print(millis());
-		Serial.print(" - Contents(");
-		Serial.print(packetSize);
-		Serial.print("):");
-		Serial.println(packetBuffer);
+		// Serial.print("Our time: ");
+		// Serial.print(millis());
+		// Serial.print(" - Contents(");
+		// Serial.print(packetSize);
+		// Serial.print("):");
+		Serial.println(UDP_TX_PACKET_MAX_SIZE);
 
 		// send a reply, to the IP address and port that sent us the packet we just got
 		Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());

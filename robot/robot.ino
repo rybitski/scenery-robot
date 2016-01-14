@@ -205,7 +205,7 @@ void loop(void) {
 	// max 2^32 = 10 digits -> 10 chars -> 10 bytes
 	// buffer should have timestamp (long), encoder1Count (long)
 	// and encoder2Count (long). Add two colon delimiters, that's 32 bytes
-	sprintf(msg, "%lu:%ld:%ld", millis(), encoder1Count, encoder2Count);
+	sprintf(msg, "%lu:%lu:%lu", ~(long)0, encoder1Count, encoder2Count);
 	Udp.write(msg, 32);
 	Udp.endPacket();
 }
