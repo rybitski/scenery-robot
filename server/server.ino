@@ -58,7 +58,9 @@ void loop() {
 		Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
 		Serial.print("Our time: ");
 		Serial.print(millis());
-		Serial.print(" - Contents:");
+		Serial.print(" - Contents(");
+		Serial.print(packetSize);
+		Serial.print("):");
 		Serial.println(packetBuffer);
 
 		// send a reply, to the IP address and port that sent us the packet we just got
@@ -66,5 +68,5 @@ void loop() {
 		Udp.write(replyBuffer);
 		Udp.endPacket();
 	}
-	delay(200);
+	delay(1);
 }
