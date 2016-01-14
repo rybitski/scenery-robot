@@ -15,9 +15,6 @@ class RoboControl(threading.Thread):
 		threading.Thread.__init__(self)
 		# Set debugging flag
 		self.debug = DEBUG
-	
-		# Setup state as normal
-		self.state = 'normal'
 		
 		# Setup variables to maintain real time left and right axis values
 		self.left_value = 0
@@ -46,6 +43,9 @@ class RoboControl(threading.Thread):
 		self.commands = deque()
 		
 	def is_connected(self):
+		"""
+		Returns True if controller is connected and false if disconnected
+		"""
 		return self.connected
 		
 	def connect(self):
@@ -65,64 +65,43 @@ class RoboControl(threading.Thread):
 		if not self.joysticks:
 			if self.debug:
 				print("No joysticks found, exiting")
+			self.connected = False
 			return False
 		else:
 			self.j = self.joysticks[0]
 			self.connected = True
-			
+		
+		""" Define event handlers for axis and buttons """
 		@self.j.event
 		def on_button(button, pressed):
 			self.exit = (button == self.get_button_num('BACK') and pressed)
-				
-			if (button == self.get_button_num('START') and pressed):
-				if self.state == 'normal':
-					self.state = 'record'
-					if self.debug:
-						print("Starting to record")
-					#self.l_joy_record[:] = []
-					#self.r_joy_record[:] = []
-				elif self.state == 'record':
-					self.state = 'normal'
-					if self.debug:
-						print("End record")
-						"""
-						for index in range(0, len(self.l_joy_record)):
-							print(("L:%1.5f , R:%1.5f") % (self.l_joy_record[index], self.r_joy_record[index]))
-						"""
 						
 		@self.j.event
 		def on_axis(axis, value):
 			left_speed = 0
 			right_speed = 0
 			
-			if self.state == 'record':
-				if axis == 'l_thumb_y':
+			if axis == 'l_thumb_y':
 					
-					# Maps analog values of -0.5 to 0.5 to -127 to 127 for motor control
-					value_convert = int(round(sensitivity_scale(value, 0.5, -0.5, 0.5, -127, 127)))
+				# Maps analog values of -0.5 to 0.5 to -127 to 127 for motor control
+				value_convert = int(round(sensitivity_scale(value, 0.5, -0.5, 0.5, -127, 127)))
+				
+				# Account for noisy deadzone in middle of joysticks
+				if (abs(value_convert) <= 10):
+					value_convert = 0
+				
+				self.left_value = value_convert
 					
-					# Account for noisy deadzone in middle of joysticks
-					if (abs(value_convert) <= 10):
-						value_convert = 0
+			elif axis == 'r_thumb_y':
 					
-					self.left_value = value_convert
+				# Maps analog values of -0.5 to 0.5 to -127 to 127 for motor control
+				value_convert = int(round(sensitivity_scale(value, 0.5, -0.5, 0.5, -127, 127)))
+				
+				# Account for noisy deadzone in middle of joysticks
+				if (abs(value_convert) <= 10):
+					value_convert = 0
 					
-				elif axis == 'r_thumb_y':
-					
-					# Maps analog values of -0.5 to 0.5 to -127 to 127 for motor control
-					value_convert = int(round(sensitivity_scale(value, 0.5, -0.5, 0.5, -127, 127)))
-					
-					# Account for noisy deadzone in middle of joysticks
-					if (abs(value_convert) <= 10):
-						value_convert = 0
-						
-					self.right_value = value_convert
-					
-			if axis == "left_trigger":
-				left_speed = value
-			elif axis == "right_trigger":
-				right_speed = value
-			self.j.set_vibration(left_speed, right_speed)
+				self.right_value = value_convert
 		
 		if self.debug:
 			print('Using device %d' % self.j.device_number)
@@ -141,25 +120,26 @@ class RoboControl(threading.Thread):
 		Continually runs thread as long as exit flag is False
 		"""
 		while not self.exit:
-			try:
-				# Register any controller events
-				#print("dispatching")
-				self.j.dispatch_events()
-			except RuntimeError:
-				# Controller was disconnected, exit controller
-				print("Controller is not connected!")
-				self.connected = False
-				self.exit = True
+			# If controller connected, dispatch events, otherwise just loop
+			if self.connected:
+				try:
+					# Register any controller events
+					self.j.dispatch_events()
+				except RuntimeError:
+					print("Controller is not connected!")
+					self.connected = False
 			time.sleep(0.01)
-		print("Joystick shutting down!")
+			
+		print("Control Thread Ending")
 		
 	def close(self):
-		if self.connected:
-			self.connected = False
-			self.exit = True
-			return True
-		else:
-			return False
+		"""
+		Sets the exit flag to end the main loop
+		"""
+		self.connected = False
+		self.exit = True
+		return True
+
 	
 def sensitivity_scale(x_in, sensitivity, original_min, original_max, desired_min, desired_max):
 	"""

@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+<<<<<<< HEAD
 # Form implementation generated from reading ui file '.\server_connect_dialog.ui'
+=======
+# Form implementation generated from reading ui file 'server_connect_dialog.ui'
+>>>>>>> 689bdfba5b02b904d5059f5d60a1174287f2030f
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
