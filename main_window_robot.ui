@@ -14,8 +14,8 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_6">
+    <item row="0" column="0">
      <widget class="QLabel" name="checkWorkingLabel">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -37,27 +37,48 @@
       </property>
       <property name="font">
        <font>
-        <pointsize>14</pointsize>
+        <pointsize>12</pointsize>
        </font>
       </property>
       <property name="autoFillBackground">
        <bool>true</bool>
       </property>
       <property name="frameShape">
-       <enum>QFrame::Box</enum>
+       <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="lineWidth">
        <number>3</number>
       </property>
       <property name="text">
-       <string>Working</string>
+       <string>Path Status: No Issues Detected</string>
       </property>
       <property name="alignment">
-       <set>Qt::AlignCenter</set>
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
       </property>
      </widget>
     </item>
-    <item>
+    <item row="0" column="1">
+     <widget class="QLabel" name="server_connection_label">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="text">
+       <string>Server Connection: Disconnected</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QFrame" name="frame">
@@ -146,16 +167,6 @@
          </item>
          <item row="1" column="0">
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="1" column="4">
-            <widget class="QLabel" name="controlConnectIndicator">
-             <property name="text">
-              <string>Conroller: Not Connected</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="queueGo">
              <property name="font">
@@ -264,16 +275,6 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="4">
-            <widget class="QLabel" name="serverConnectIndicator">
-             <property name="text">
-              <string>Server: Not Connected</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="1">
             <widget class="QPushButton" name="recordPath">
              <property name="font">
@@ -307,7 +308,7 @@
       </item>
      </layout>
     </item>
-    <item>
+    <item row="2" column="0" colspan="2">
      <widget class="QFrame" name="frame_3">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
