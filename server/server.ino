@@ -61,15 +61,25 @@ void loop() {
 		// Serial.print(" - Contents(");
 		// Serial.print(packetSize);
 		// Serial.print("):");
-		unsigned long time = packetBuffer[0];
-		signed long enc1 = packetBuffer[4];
-		signed long enc2 = packetBuffer[8];
-		Serial.print("Time=");
-		Serial.print(time);
-		Serial.print(" enc1=");
-		Serial.print(enc1);
-		Serial.print(" enc2=");
-		Serial.println(enc2);
+		// unsigned long time = packetBuffer[0];
+		// signed long enc1 = packetBuffer[4];
+		// signed long enc2 = packetBuffer[8];
+		// unsigned long time = (packetBuffer[0] & 0xFF) | (packetBuffer[0] & (0xFF << 2)) | (packetBuffer[0] & (0xFF << 4)) | (packetBuffer[0] & (0xFF << 6));
+		// signed long enc1 = packetBuffer[4];
+		// signed long enc2 = packetBuffer[8];
+		int i;
+		for(i = 0; i < 12; i++) {
+			Serial.print((int)((char)packetBuffer[i] & 0xFF));
+			Serial.print(" ");
+		}
+		Serial.println("end");
+
+		// Serial.print("Time=");
+		// Serial.print(time);
+		// Serial.print(" enc1=");
+		// Serial.print(enc1);
+		// Serial.print(" enc2=");
+		// Serial.println(enc2);
 
 
 		// send a reply, to the IP address and port that sent us the packet we just got
