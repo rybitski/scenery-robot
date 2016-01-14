@@ -81,7 +81,7 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 	def handle_server_box(self):
 		self.dialog = QDialog()
-		self.ui = server_connect_dialog.Ui_ServerEntry()
+		self.ui = server_connect_dialog.Ui_Dialog()
 		self.ui.setupUi(self.dialog)
 		self.dialog.show()
 		
