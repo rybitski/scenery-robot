@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'main_window_robot.ui'
+# Form implementation generated from reading ui file '.\main_window_robot.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
@@ -58,7 +58,7 @@ class Ui_MainWindow(object):
         self.server_connection_label.setFont(font)
         self.server_connection_label.setFrameShape(QtGui.QFrame.StyledPanel)
         self.server_connection_label.setObjectName(_fromUtf8("server_connection_label"))
-        self.gridLayout_6.addWidget(self.server_connection_label, 0, 1, 1, 1)
+        self.gridLayout_6.addWidget(self.server_connection_label, 0, 2, 1, 1)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.frame = QtGui.QFrame(self.centralwidget)
@@ -186,7 +186,7 @@ class Ui_MainWindow(object):
         self.gridLayout_3.addLayout(self.gridLayout_2, 1, 0, 1, 1)
         self.graphicsView.raise_()
         self.horizontalLayout.addWidget(self.map)
-        self.gridLayout_6.addLayout(self.horizontalLayout, 1, 0, 1, 2)
+        self.gridLayout_6.addLayout(self.horizontalLayout, 1, 0, 1, 3)
         self.frame_3 = QtGui.QFrame(self.centralwidget)
         self.frame_3.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame_3.setFrameShadow(QtGui.QFrame.Raised)
@@ -242,7 +242,19 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addItem(spacerItem2)
         self.verticalLayout_4.addWidget(self.frame_4)
         self.horizontalLayout_2.addWidget(self.groupBox_3)
-        self.gridLayout_6.addWidget(self.frame_3, 2, 0, 1, 2)
+        self.gridLayout_6.addWidget(self.frame_3, 2, 0, 1, 3)
+        self.controller_connection_label_2 = QtGui.QLabel(self.centralwidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.controller_connection_label_2.sizePolicy().hasHeightForWidth())
+        self.controller_connection_label_2.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.controller_connection_label_2.setFont(font)
+        self.controller_connection_label_2.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.controller_connection_label_2.setObjectName(_fromUtf8("controller_connection_label_2"))
+        self.gridLayout_6.addWidget(self.controller_connection_label_2, 0, 1, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 983, 21))
@@ -300,6 +312,7 @@ class Ui_MainWindow(object):
         self.time.setDisplayFormat(_translate("MainWindow", "mm:ss", None))
         self.timeLeftLabel.setText(_translate("MainWindow", "Time Left", None))
         self.timeLeft.setDisplayFormat(_translate("MainWindow", "mm:ss", None))
+        self.controller_connection_label_2.setText(_translate("MainWindow", "Controller Connection: Disconnected", None))
         self.menuFile.setTitle(_translate("MainWindow", "File", None))
         self.menuTools.setTitle(_translate("MainWindow", "Tools", None))
         self.menuHelp.setTitle(_translate("MainWindow", "Help", None))
