@@ -9,18 +9,18 @@ with a nice GUI.
 #include <EthernetV2_0.h>
 
 const int SDCARD_CS_PIN = 4;
+const int W5200_CS_PIN = 10;
 
 // server stuff
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE8 };
-const int PORT = 29281;
+const int PORT = 29282;
 IPAddress ip(192, 168, 1, 2);
-IPAddress gateway(192, 168, 1, 1);
-IPAddress subnet(255, 255, 255, 0);
-EthernetServer server(PORT);
-boolean gotAMessage = false; // whether or not you got a message from the client yet
 
-typedef enum {receiveHeader, receiveLeft, receiveRight} ReceiveState;
-ReceiveState receiveState;
+// buffers for receiving and sending data
+char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
+char replyBuffer[] = "acknowledged";       // a string to send back
+
+EthernetUDP Udp;
 
 void setup() {
 	Serial.begin(9600);
@@ -45,28 +45,39 @@ void setup() {
 	Serial.println(")");
 	Serial.println();
 
-	// start listening for clients
-	server.begin();
+	Udp.begin(PORT);
 	
 	Serial.println("Done with setup()");
 }
 
 void loop() {
-	// Gets a client that is connected to the server and has data
-	// available for reading. The connection persists when the returned
-	// client object goes out of scope; you can close it by calling 
-	// client.stop().
-	EthernetClient client = server.available();
+	// if there's data available, read a packet
+	int packetSize = Udp.parsePacket();
+	if (packetSize) {
+		// read the packet into the buffer
+		Udp.read(packetBuffer, 12);
+		// Serial.print("Our time: ");
+		// Serial.print(millis());
+		// Serial.print(" - Contents(");
+		// Serial.print(packetSize);
+		// Serial.print("):");
+		unsigned long time;
+		signed long enc1;
+		signed long enc2;
+		memcpy(&time, &packetBuffer[0], 4);
+		memcpy(&enc1, &packetBuffer[4], 4);
+		memcpy(&enc2, &packetBuffer[8], 4);
+		Serial.print("Time=");
+		Serial.print(time);
+		Serial.print(" enc1=");
+		Serial.print(enc1);
+		Serial.print(" enc2=");
+		Serial.println(enc2);
 
-	if (client) {
-			client.write(0xA5);
-			client.write(103);
-			client.write(23);
-		
-
-	  	char thisChar = client.read();
-	  	Serial.print(thisChar);
+		// send a reply, to the IP address and port that sent us the packet we just got
+		Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+		Udp.write(replyBuffer);
+		Udp.endPacket();
 	}
-
-	delay(200);
+	delay(1);
 }
