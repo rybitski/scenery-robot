@@ -25,11 +25,10 @@ signed long encoder2Count = 0;
 
 // server stuff
 byte mac[] = {0x62, 0x02, 0x69, 0x9E, 0xC4, 0xFF};
-const int TCP_PORT = 29281;
+const int PORT = 29282;
 IPAddress ip(192, 168, 1, 3);
 EthernetClient client;
 EthernetUDP Udp;
-const int UDP_PORT = 29282;
 
 const byte HEADER_BYTE = 0xA5;
 
@@ -155,7 +154,7 @@ void setup(void) {
 	Serial.begin(9600);
 
 	Serial.println("Begin setup()");
-	Serial.println("We are the client");
+	Serial.println("We are the server!");
 
 	initEncoders();       Serial.println("Encoders initialized.");
 	clearEncoderCount();  Serial.println("Encoders cleared.");
@@ -164,6 +163,7 @@ void setup(void) {
 	pinMode(SDCARD_CS_PIN, OUTPUT);
 	digitalWrite(SDCARD_CS_PIN, HIGH);
 
+	// start the Ethernet connection:
 	Serial.print("Configuring Ethernet client using static IP... ");
 	Ethernet.begin(mac, ip);
 	Serial.print("Success. ");
@@ -176,67 +176,12 @@ void setup(void) {
 	Serial.println(")");
 	Serial.println();
 
-	char serverName[] = "192.168.1.2";
-	Serial.print("Trying to connect to ");
-	Serial.print(serverName);
-	Serial.print(":");
-	Serial.print(TCP_PORT);
-	Serial.print("... ");
-	if (client.connect(serverName, TCP_PORT)) {
-		Serial.println("connected.");
-		client.print("Hi. My name is ");
-		client.print(Ethernet.localIP());
-		client.println(". Thx for letting me connect.");
-		client.println();
-	}
-	else {
-		Serial.println("failed.");
-	}
-
-	Udp.begin(UDP_PORT);
-
-	SabertoothTXPinSerial.begin(9600);
-	ST.autobaud();
-
+	Udp.begin(PORT);
+	
 	Serial.println("Done with setup()");
 }
 
 void loop(void) {
-	// if the server's disconnected, stop the client:
-	if (!client.connected()) {
-		Serial.println("Server has disconnected. Stopping client.");
-		client.stop();
-
-		// do nothing forevermore:
-		while(true);
-	}
-
-	// 0xA5, leftCommand, rightCommand
-
-	if (client.available()) { // if RX buffer has stuff in it
-		if (client.read() == HEADER_BYTE) {
-			controls.leftMotorPower = client.read();
-			controls.rightMotorPower = client.read();
-		}
-	}
-	// else {
-	// 	Serial.println("Server has not written any bytes. Setting both motors to 0.");
-	// 	controls.leftMotorPower = 0;
-	// 	controls.rightMotorPower = 0;
-	// }
-
-	// client.print("{\"time\": ");
-	// client.print(millis());
-	// client.print(", \"left\": ");
-	// client.print(encoder1Count);
-	// client.print(", \"right\": ");
-	// client.print(encoder2Count);
-	// client.println("}");
-
-	// update motor powers from controls struct
-	ST.motor(1, controls.leftMotorPower);
-	ST.motor(2, controls.rightMotorPower);
-
 	// Retrieve current encoder counters
 	encoder1Count = readEncoder(1);
 	encoder2Count = readEncoder(2);
@@ -251,4 +196,12 @@ void loop(void) {
 	Serial.print(controls.leftMotorPower);
 	Serial.print(" rightMotorPower: ");
 	Serial.println(controls.rightMotorPower);
+
+	// send a reply, to the IP address and port that sent us the packet we just got
+	IPAddress destination(192, 168, 1, 2);
+	Udp.beginPacket(destination, PORT);
+	char msg[20];
+	sprintf(msg, "enc1=%d", encoder1Count);
+	Udp.write(msg, 20);
+	Udp.endPacket();
 }
