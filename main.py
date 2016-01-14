@@ -32,7 +32,7 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 		# Initiate controlling applications
 		self.control = RoboControl(DEBUG=True)
-		self.network = RoboNetwork('192.168.1.2', 29281, 3, 15, DEBUG=True)
+		self.network = RoboNetwork('192.168.1.2', 29281, 3, '192.168.1.3', 29282, 15, DEBUG=True)
 		
 		# Run controlling applications
 		self.control.start()
@@ -75,6 +75,11 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		Checks events related to controller
 		"""
 		self.check_controller_connected()
+	
+	def check_main_state_events(self):
+		"""
+		"""
+		
 		
 	def handle_server_box(self):
 		"""
@@ -147,12 +152,14 @@ class MainThread(QThread):
 		while self.running:
 			self.app.check_events()
 			
-			if self.app.controller_connected and self.app.network_connected:
-			#if self.app.controller_connected:
-				time.sleep(0.1)
+			#if self.app.controller_connected and self.app.network_connected:
+			if self.app.controller_connected:
+				time.sleep(0.01)
 				print("sending:", self.app.control.left_value, self.app.control.right_value)
-				self.app.network.send_command(self.app.control.left_value, self.app.control.right_value)
-				
+				try:
+					self.app.network.send_command(self.app.control.left_value, self.app.control.right_value)
+				except Exception as e:
+					continue
 				
 		# Main thread has ended, end controller and network threads if they are running
 		self.app.control.close()

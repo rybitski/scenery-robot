@@ -11,17 +11,23 @@ import binascii
 import struct
 
 class RoboNetwork(threading.Thread):
-	def __init__(self, ip, port, buff_size, timeout, DEBUG = False):
+	def __init__(self, tcp_ip, tcp_port, tcp_buff_size, udp_target_ip, udp_target_port, timeout, DEBUG = False):
 		"""
 		Initiates a socket based TCP network that is thread based
 		"""
 		threading.Thread.__init__(self)
 		
 		# Setup initial fields
-		self.TCP_IP = ip
-		self.TCP_PORT = port
-		self.BUFFER_SIZE = buff_size
+		self.TCP_IP = tcp_ip
+		self.TCP_PORT = tcp_port
+		self.BUFFER_SIZE = tcp_buff_size
+		self.UDP_TARGET_IP = udp_target_ip
+		self.UDP_TARGET_PORT = udp_target_port
 		self.timeout = timeout
+		
+		# Create UDP socket
+		self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+
 		
 		# Set flags
 		self.connection_started = False
@@ -43,34 +49,34 @@ class RoboNetwork(threading.Thread):
 		Attempts to listen and allow a client to connect
 		Returns True if client connected, False if socket timesout
 		"""
-		# Create socket
-		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		# Create TCP socket
+		self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		
 		# Set timeout for blocking socket calls
-		self.s.settimeout(self.timeout)
+		self.tcp_socket.settimeout(self.timeout)
 		
 		# Bind socket to ip and port
 		self.status = 'Server Connection: Binding Socket'
 		try:
-			self.s.bind((self.TCP_IP, self.TCP_PORT))
+			self.tcp_socket.bind((self.TCP_IP, self.TCP_PORT))
 		except socket.error:
 			print("Failed to bind socket")
 			self.status = 'Server Connection: Socket Failed to Bind'
 			self.connection_started = False
 			self.connected = False
-			self.s.close()
+			self.tcp_socket.close()
 			return self.connected
 		
 		self.status = 'Server Connection: Waiting for Client'
 		# Set up socket to listen
-		self.s.listen(1)
+		self.tcp_socket.listen(1)
 	
 		# Wait for a new client
 		try:
 			# Attempt to connect
 			print("Waiting for client")
-			self.conn, self.addr = self.s.accept()
+			self.conn, self.addr = self.tcp_socket.accept()
 			self.connected = True
 			self.status = 'Server Connection: Client Connected'
 		except socket.timeout:
@@ -93,10 +99,12 @@ class RoboNetwork(threading.Thread):
 		"""
 		data = '\xA5' + struct.pack('bb', left_value, right_value)
 		
-		try:
-			self.conn.send(data)
-		except socket.error:
-			return
+		self.udp_socket.sendto(data, (self.UDP_TARGET_IP, self.UDP_TARGET_PORT))
+		
+		#try:
+			#self.conn.send(data)
+		#except socket.error:
+		#	return
 		
 	def run(self):
 		"""
