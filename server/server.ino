@@ -54,16 +54,9 @@ void loop() {
 	// if there's data available, read a packet
 	int packetSize = Udp.parsePacket();
 	if (packetSize) {
-		Serial.print("Received packet of size ");
-		Serial.println(packetSize);
-		Serial.print("From ");
-		Serial.print(Udp.remoteIP());
-		Serial.print(":");
-		Serial.println(Udp.remotePort());
-
 		// read the packet into the buffer
 		Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
-		Serial.println("Contents:");
+		Serial.print("Contents:");
 		Serial.println(packetBuffer);
 
 		// send a reply, to the IP address and port that sent us the packet we just got

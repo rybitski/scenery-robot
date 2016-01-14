@@ -200,8 +200,8 @@ void loop(void) {
 	// send a reply, to the IP address and port that sent us the packet we just got
 	IPAddress destination(192, 168, 1, 2);
 	Udp.beginPacket(destination, PORT);
-	char msg[20];
-	sprintf(msg, "enc1=%d", encoder1Count);
-	Udp.write(msg, 20);
+	char msg[200];
+	sprintf(msg, "enc1=%ld enc2=%ld", encoder1Count, encoder2Count);
+	Udp.write(msg, 200);
 	Udp.endPacket();
 }
