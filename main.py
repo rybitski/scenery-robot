@@ -32,7 +32,7 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 		# Initiate controlling applications
 		self.control = RoboControl(DEBUG=True)
-		self.network = RoboNetwork('192.168.1.2', 29281, 3, 5, DEBUG=True)
+		self.network = RoboNetwork('192.168.1.2', 29281, 3, 15, DEBUG=True)
 		
 		# Run controlling applications
 		self.control.start()
@@ -41,9 +41,6 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		# Set state flags
 		self.controller_connected = False
 		self.network_connected = False
-		
-		# Using this for errors from network control
-		self.network_status = 0
 		
 		# Overall state
 		self.state = States.DISCONNECTED
@@ -80,6 +77,9 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		self.check_controller_connected()
 		
 	def handle_server_box(self):
+		"""
+		Handle pop up
+		"""
 		self.dialog = QDialog()
 		self.ui = server_connect_dialog.Ui_Dialog()
 		self.ui.setupUi(self.dialog)
@@ -98,7 +98,9 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		"""
 		Checks if controller is connected
 		Enables or disables connected button accordingly
+		Sets label text from control status
 		"""
+		self.controller_connection_label_2.setText(self.control.status)
 		self.controller_connected = self.control.is_connected()
 		self.controllerConnect.setEnabled(not self.controller_connected)
 		return self.controller_connected
@@ -114,26 +116,15 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 	def check_network_connected(self):
 		"""
 		Checks if network is connected
+		Enables or disables connect button accordingly
+		Sets label text from network status
 		"""
 		self.server_connection_label.setText(self.network.status)
 		self.network_connected = self.network.is_connected()
 		self.serverStart.setEnabled(not self.network_connected and not self.network.connection_started)
 		return self.network_connected
 	
-	
 # ------------------- MAIN APP EVENTS ------------------------------
-	def keyPressEvent(self, qKeyEvent):
-		if qKeyEvent.key() == QtCore.Qt.Key_Return: 
-			print('Enter pressed')
-			print("sending:", self.control.left_value, self.control.right_value)
-			data = '\xA5' + struct.pack('bb', -127, -127)
-			data1 = '\xA5\x81\x81'
-			print(data)
-			print(data1)
-			#self.network.send_command(self.control.left_value, self.control.right_value)
-		else:
-			super().keyPressEvent(qKeyEvent)
-	
 	def closeEvent(self, event):
 		"""
 		Overriden close event that will terminate main thread
@@ -141,6 +132,7 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		self.mainThread.running = False
 		super(RobotApp, self).closeEvent(event)
 		
+# --------------------- MAIN THREAD CLASS ---------------------
 class MainThread(QThread):
 
 	def __init__(self, app):

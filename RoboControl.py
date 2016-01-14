@@ -42,6 +42,9 @@ class RoboControl(threading.Thread):
 		# Queue of commands
 		self.commands = deque()
 		
+		# Set status string that can be passed to parent GUI
+		self.status = 'Controller Connection: Disconnected'
+		
 	def is_connected(self):
 		"""
 		Returns True if controller is connected and false if disconnected
@@ -64,12 +67,14 @@ class RoboControl(threading.Thread):
 		# Attempt to connect to first joystick
 		if not self.joysticks:
 			if self.debug:
+				self.status = 'Controller Connection: No controller found'
 				print("No joysticks found, exiting")
 			self.connected = False
 			return False
 		else:
 			self.j = self.joysticks[0]
 			self.connected = True
+			self.status = 'Controller Connection: Connected'
 		
 		""" Define event handlers for axis and buttons """
 		@self.j.event
@@ -127,6 +132,7 @@ class RoboControl(threading.Thread):
 					self.j.dispatch_events()
 				except RuntimeError:
 					print("Controller is not connected!")
+					self.status = 'Controller Connection: Controller Disconnected'
 					self.connected = False
 			time.sleep(0.01)
 			

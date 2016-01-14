@@ -92,8 +92,12 @@ class RoboNetwork(threading.Thread):
 		Sends command as byte string with A5 as header 
 		"""
 		data = '\xA5' + struct.pack('bb', left_value, right_value)
-		self.conn.send(data)
-	
+		
+		try:
+			self.conn.send(data)
+		except socket.error:
+			return
+		
 	def run(self):
 		"""
 		Main thread run method
@@ -107,6 +111,8 @@ class RoboNetwork(threading.Thread):
 					data = self.conn.recv(self.BUFFER_SIZE)
 				except socket.timeout:
 					# Continue to try again if socket timesout
+					continue
+				except socket.error:
 					continue
 			elif self.connection_started:
 				self.connect()
