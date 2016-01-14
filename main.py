@@ -1,4 +1,5 @@
 from PyQt4 import QtGui, QtCore # Import QtGui module
+from PyQt4.QtGui import QDialog
 from PyQt4.QtCore import QThread
 import sys				# Allows for command line arguments to be passed in
 import time
@@ -56,7 +57,7 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		"""
 		self.controllerConnect.clicked.connect(self.connect_to_controller)
 		self.serverStart.clicked.connect(self.connect_to_network)
-		#self.ipSpecify.clicked.connect()
+		self.ipSpecify.clicked.connect(self.handle_server_box)
 	
 	def check_events(self):
 		"""
@@ -76,6 +77,12 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		Checks events related to controller
 		"""
 		self.check_controller_connected()
+		
+	def handle_server_box(self):
+		self.dialog = QDialog()
+		self.ui = server_connect_dialog.Ui_ServerEntry()
+		self.ui.setupUi(self.dialog)
+		self.dialog.show()
 		
 # --------------------- CONTROLLER METHODS ---------------------
 	def connect_to_controller(self):
