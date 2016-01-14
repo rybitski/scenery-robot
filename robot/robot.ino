@@ -201,9 +201,21 @@ void loop(void) {
 	IPAddress destination(192, 168, 1, 2);
 	Udp.beginPacket(destination, PORT);
 	byte data[12];
-	data[0] = millis();
-	data[4] = encoder1Count;
-	data[8] = encoder2Count;
+	for (int i = 0; i < 12; i++) {
+		
+	}
+	data[0] = millis() & (0xFF << 6);
+	data[1] = millis() & (0xFF << 4);
+	data[2] = millis() & (0xFF << 2);
+	data[3] = millis() & (0xFF << 0);
+	data[4] = encoder1Count & (0xFF << 6);
+	data[5] = encoder1Count & (0xFF << 4);
+	data[6] = encoder1Count & (0xFF << 2);
+	data[7] = encoder1Count & (0xFF << 0);
+	data[8] = encoder2Count & (0xFF << 6);
+	data[9] = encoder2Count & (0xFF << 4);
+	data[10] = encoder2Count & (0xFF << 2);
+	data[11] = encoder2Count & (0xFF << 0);
 	Udp.write(data, 12);
 	Udp.endPacket();
 }

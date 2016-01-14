@@ -68,7 +68,7 @@ void loop() {
 		// signed long enc1 = packetBuffer[4];
 		// signed long enc2 = packetBuffer[8];
 		int i;
-		for(i = 0; i < 12; i++) {
+		for(i = 4; i < 12; i++) {
 			Serial.print((int)((char)packetBuffer[i] & 0xFF));
 			Serial.print(" ");
 		}
