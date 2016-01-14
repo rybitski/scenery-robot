@@ -161,7 +161,7 @@ void setup(void) {
 	Serial.begin(9600);
 
 	Serial.println("Begin setup()");
-	Serial.println("We are the client!");
+	Serial.println("We are the client");
 
 	initEncoders();       Serial.println("Encoders initialized.");
 	clearEncoderCount();  Serial.println("Encoders cleared.");
@@ -190,9 +190,9 @@ void setup(void) {
 	Serial.print("... ");
 	if (client.connect(serverName, PORT)) {
 		Serial.println("connected.");
-		client.print("Hi!!! My name is ");
+		client.print("Hi. My name is ");
 		client.print(Ethernet.localIP());
-		client.println(". Thx for letting me connect!");
+		client.println(". Thx for letting me connect.");
 		client.println();
 	}
 	else {
