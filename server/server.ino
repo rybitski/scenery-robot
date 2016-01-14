@@ -17,7 +17,7 @@ const int PORT = 29282;
 IPAddress ip(192, 168, 1, 2);
 
 // buffers for receiving and sending data
-char packetBuffer[33]; //buffer to hold incoming packet,
+char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
 char replyBuffer[] = "acknowledged";       // a string to send back
 
 EthernetUDP Udp;
@@ -61,26 +61,18 @@ void loop() {
 		// Serial.print(" - Contents(");
 		// Serial.print(packetSize);
 		// Serial.print("):");
-		// unsigned long time = packetBuffer[0];
-		// signed long enc1 = packetBuffer[4];
-		// signed long enc2 = packetBuffer[8];
-		// unsigned long time = (packetBuffer[0] & 0xFF) | (packetBuffer[0] & (0xFF << 2)) | (packetBuffer[0] & (0xFF << 4)) | (packetBuffer[0] & (0xFF << 6));
-		// signed long enc1 = packetBuffer[4];
-		// signed long enc2 = packetBuffer[8];
-		int i;
-		for(i = 4; i < 12; i++) {
-			Serial.print((int)((char)packetBuffer[i] & 0xFF));
-			Serial.print(" ");
-		}
-		Serial.println("end");
-
-		// Serial.print("Time=");
-		// Serial.print(time);
-		// Serial.print(" enc1=");
-		// Serial.print(enc1);
-		// Serial.print(" enc2=");
-		// Serial.println(enc2);
-
+		unsigned long time;
+		signed long enc1;
+		signed long enc2;
+		memcpy(&time, &packetBuffer[0], 4);
+		memcpy(&enc1, &packetBuffer[4], 4);
+		memcpy(&enc2, &packetBuffer[8], 4);
+		Serial.print("Time=");
+		Serial.print(time);
+		Serial.print(" enc1=");
+		Serial.print(enc1);
+		Serial.print(" enc2=");
+		Serial.println(enc2);
 
 		// send a reply, to the IP address and port that sent us the packet we just got
 		Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
