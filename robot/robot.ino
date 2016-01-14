@@ -238,8 +238,8 @@ void loop(void) {
 	// client.println("}");
 
 	// update motor powers from controls struct
-	ST.motor(1, 120);
-	ST.motor(2, 120);
+	ST.motor(1, controls.leftMotorPower);
+	ST.motor(2, controls.rightMotorPower);
 
 	// Retrieve current encoder counters
 	encoder1Count = readEncoder(1);
