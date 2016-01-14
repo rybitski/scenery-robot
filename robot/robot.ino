@@ -201,7 +201,7 @@ void loop(void) {
 	IPAddress destination(192, 168, 1, 2);
 	Udp.beginPacket(destination, PORT);
 	char msg[200];
-	sprintf(msg, "enc1=%ld enc2=%ld", encoder1Count, encoder2Count);
+	sprintf(msg, "%lu enc1=%ld enc2=%ld", millis(), encoder1Count, encoder2Count);
 	Udp.write(msg, 200);
 	Udp.endPacket();
 }
