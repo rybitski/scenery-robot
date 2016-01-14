@@ -17,7 +17,7 @@ const int PORT = 29282;
 IPAddress ip(192, 168, 1, 2);
 
 // buffers for receiving and sending data
-char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
+char packetBuffer[33]; //buffer to hold incoming packet,
 char replyBuffer[] = "acknowledged";       // a string to send back
 
 EthernetUDP Udp;
@@ -55,13 +55,13 @@ void loop() {
 	int packetSize = Udp.parsePacket();
 	if (packetSize) {
 		// read the packet into the buffer
-		Udp.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
+		Udp.read(packetBuffer, 33);
 		// Serial.print("Our time: ");
 		// Serial.print(millis());
 		// Serial.print(" - Contents(");
 		// Serial.print(packetSize);
 		// Serial.print("):");
-		Serial.println(UDP_TX_PACKET_MAX_SIZE);
+		Serial.println(packetBuffer);
 
 		// send a reply, to the IP address and port that sent us the packet we just got
 		Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());

@@ -200,12 +200,12 @@ void loop(void) {
 	// send a reply, to the IP address and port that sent us the packet we just got
 	IPAddress destination(192, 168, 1, 2);
 	Udp.beginPacket(destination, PORT);
-	char msg[32];
+	char msg[33];
 	// longs in message are stored as digits, not constant 4 byte
 	// max 2^32 = 10 digits -> 10 chars -> 10 bytes
 	// buffer should have timestamp (long), encoder1Count (long)
 	// and encoder2Count (long). Add two colon delimiters, that's 32 bytes
-	sprintf(msg, "%lu:%lu:%lu", ~(long)0, encoder1Count, encoder2Count);
-	Udp.write(msg, 32);
+	sprintf(msg, "%lu:%lu:%lu\0", ~(long)0, encoder1Count, encoder2Count);
+	Udp.write(msg, 33);
 	Udp.endPacket();
 }
