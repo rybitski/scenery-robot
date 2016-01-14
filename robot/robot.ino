@@ -28,15 +28,8 @@ const int PORT = 29281;
 IPAddress ip(192, 168, 1, 3);
 EthernetClient client;
 
-// datastructure to hold the path
-// Only 16 long because of memorize size constraints
-// Longs are 4 bytes, * 2 * 16 = 1024 bytes
-// SuperDroid Robots Dual LS7366R Quadrature Encoder Buffer
-const int BUFFER_SIZE = 16;
-signed long pathBuffer[BUFFER_SIZE][2]; // for left and right encoder
-unsigned int pathBufferIndex = 0;
-
 const byte HEADER_BYTE = 0xA5;
+
 // datastructure to hold the controls from the server
 typedef struct {
 	int8_t leftMotorPower; // between -127 and 127, to match Sabertooth controller
@@ -44,8 +37,6 @@ typedef struct {
 	// byte deadManSwitch; // code to enable motors
 } Controls;
 Controls controls; // specific instance of struct
-
-String currentLine = "";
 
 Sabertooth ST(128);
 
