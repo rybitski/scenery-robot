@@ -3,6 +3,7 @@ from PyQt4.QtCore import QThread
 import sys				# Allows for command line arguments to be passed in
 import time
 import main_window_robot		# Layout file
+import server_connect_dialog
 import struct
 
 from RoboControl import RoboControl
@@ -29,11 +30,18 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 		# Initiate controlling applications
 		self.control = RoboControl(DEBUG=True)
-		self.network = RoboNetwork('192.168.1.2', 29281, 3, 15, DEBUG=True)
+		self.network = RoboNetwork('192.168.1.2', 29281, 3, 5, DEBUG=True)
+		
+		# Run controlling applications
+		self.control.start()
+		self.network.start()
 		
 		# Set state flags
 		self.controller_connected = False
 		self.network_connected = False
+		
+		# Using this for errors from network control
+		self.network_status = 0
 		
 		# Overall state
 		self.state = States.DISCONNECTED
@@ -48,30 +56,64 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		"""
 		self.controllerConnect.clicked.connect(self.connect_to_controller)
 		self.serverStart.clicked.connect(self.connect_to_network)
+		#self.ipSpecify.clicked.connect()
 	
+	def check_events(self):
+		"""
+		Overall event checking for main thread
+		"""
+		self.check_controller_events()
+		self.check_network_events()
+		
+	def check_network_events(self):
+		"""
+		Checks events related to network server
+		"""
+		self.check_network_connected()
+	
+	def check_controller_events(self):
+		"""
+		Checks events related to controller
+		"""
+		self.check_controller_connected()
+		
+# --------------------- CONTROLLER METHODS ---------------------
 	def connect_to_controller(self):
 		"""
-		Connects to the controller and returns if connection succeeded
+		Connects to the controller and returns True if connection succeeded
+		and False if not
 		"""
-		self.controller_connected = self.control.connect()
-		if self.controller_connected:
-			 self.control.start()
-		else:
-			pass
+		self.controller_connected = self.control.connect()	
 		return self.controller_connected
 		
+	def check_controller_connected(self):
+		"""
+		Checks if controller is connected
+		Enables or disables connected button accordingly
+		"""
+		self.controller_connected = self.control.is_connected()
+		self.controllerConnect.setEnabled(not self.controller_connected)
+		return self.controller_connected
+		
+# --------------------- NETWORK METHODS ---------------------		
 	def connect_to_network(self):
 		"""
 		Opens server to connect to client
 		"""
-		print("Attempting to connect to client")
-		self.network_connected = self.network.connect()
-		if self.network_connected:
-			print("client connected!")
-		else:
-			print("timeout connection")
+		if not self.network.connection_started:
+			self.network.start_connection()
+		
+	def check_network_connected(self):
+		"""
+		Checks if network is connected
+		"""
+		self.server_connection_label.setText(self.network.status)
+		self.network_connected = self.network.is_connected()
+		self.serverStart.setEnabled(not self.network_connected and not self.network.connection_started)
 		return self.network_connected
 	
+	
+# ------------------- MAIN APP EVENTS ------------------------------
 	def keyPressEvent(self, qKeyEvent):
 		if qKeyEvent.key() == QtCore.Qt.Key_Return: 
 			print('Enter pressed')
@@ -103,7 +145,10 @@ class MainThread(QThread):
 
 	def run(self):
 		while self.running:
+			self.app.check_events()
+			
 			if self.app.controller_connected and self.app.network_connected:
+			#if self.app.controller_connected:
 				time.sleep(0.1)
 				print("sending:", self.app.control.left_value, self.app.control.right_value)
 				self.app.network.send_command(self.app.control.left_value, self.app.control.right_value)
@@ -112,8 +157,9 @@ class MainThread(QThread):
 		# Main thread has ended, end controller and network threads if they are running
 		self.app.control.close()
 		self.app.network.close()
+		print("Ending Main Thread")
 		
-			
+
 def main():
 	app = QtGui.QApplication(sys.argv)	# New Instance of QApplication
 	form = RobotApp()					# Set form as RobotApp
