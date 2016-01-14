@@ -1,8 +1,10 @@
 from PyQt4 import QtGui, QtCore # Import QtGui module
 from PyQt4.QtCore import QThread
+from PyQt4.QtGui import QDialog
 import sys				# Allows for command line arguments to be passed in
 import time
 import main_window_robot		# Layout file
+import server_connect_dialog		# Diaglog box
 import struct
 
 from RoboControl import RoboControl
@@ -48,7 +50,14 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		"""
 		self.controllerConnect.clicked.connect(self.connect_to_controller)
 		self.serverStart.clicked.connect(self.connect_to_network)
-	
+		self.ipSpecify.clicked.connect(self.handle_server_box)
+
+	def handle_server_box(self):
+		self.dialog = QDialog()
+		self.ui = server_connect_dialog.Ui_ServerEntry()
+		self.ui.setupUi(self.dialog )
+		self.dialog.show()
+
 	def connect_to_controller(self):
 		"""
 		Connects to the controller and returns if connection succeeded
