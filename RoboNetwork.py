@@ -4,10 +4,11 @@
 # Author - Brian Nguyen
 # Requires pyglet 1.2alpha1 or higher
 # pip install --upgrade http://pyglet.googlecode.com/archive/tip.zip
+# Requires Python 2.7
+
 import threading
 import socket
 import json
-import binascii
 import struct
 
 class RoboNetwork(threading.Thread):

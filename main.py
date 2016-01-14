@@ -1,3 +1,9 @@
+# main.py
+# Contains class for controlling scenery robot interfacing with two other thread based classes for manual and network control
+# Version - 0.1
+# Author - Brian Nguyen
+# Requires Python 2.7
+
 from PyQt4 import QtGui, QtCore # Import QtGui module
 from PyQt4.QtGui import QDialog
 from PyQt4.QtCore import QThread
@@ -11,6 +17,7 @@ import struct
 from RoboControl import RoboControl
 from RoboNetwork import RoboNetwork
 
+# --------------------- ENUM DEFINITION ---------------------
 # Python 2 define enum states http://stackoverflow.com/questions/36932/
 def enum(*sequential, **named):
     enums = dict(zip(sequential, range(len(sequential))), **named)

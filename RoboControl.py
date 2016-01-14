@@ -2,6 +2,8 @@
 # Contains class for connecting to a scenery robot network and send data as a thread-based class
 # Version - 0.1
 # Author - Brian Nguyen
+# Requires Python 2.7
+# Requires XInputJoystick library
 
 import sys
 import time
