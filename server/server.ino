@@ -7,6 +7,7 @@ with a nice GUI.
 #include <Servo.h>
 #include <SPI.h>
 #include <EthernetV2_0.h>
+#include <stdint.h>
 
 const int SDCARD_CS_PIN = 4;
 const int W5200_CS_PIN = 10;
@@ -70,22 +71,23 @@ void loop() {
 	// available for reading. The connection persists when the returned
 	// client object goes out of scope; you can close it by calling 
 	// client.stop().
-	EthernetClient client = server.available();
+	// EthernetClient client = server.available();
 
-	if (client) {
-	  	char thisChar = client.read();
-	  	Serial.print(thisChar);
-	}
+	// if (client) {
+	//   	while(client.read());
+	// }
 
-	IPAddress destination(192, 168, 1, 2);
+	IPAddress destination(192, 168, 1, 3);
 	Udp.beginPacket(destination, UDP_PORT);
 	byte data[16];
 	unsigned long now = millis();
-	unsigned long data1 = 55;
-	unsigned long data2 = 82;
+	uint8_t data1 = 0x55;
+	uint8_t data2 = 0x32;
 	memcpy(data, &now, 4);
-	memcpy(data + 4, &data1, 4);
-	memcpy(data + 8, &data2, 4);
+	memcpy(data + 4, &data1, 1);
+	memcpy(data + 5, &data2, 1);
 	Udp.write(data, 12);
 	Udp.endPacket();
+
+	Serial.print("Sent.");
 }
