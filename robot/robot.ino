@@ -232,12 +232,6 @@ void loop(void) {
 		Udp.read(packetBuffer, 12);
 
 		// read command from UDP packet
-			// if command is to start recording
-				// set state to recording
-				// start buffer index at 0
-			// if command is playback
-				// set state to playback
-				// start buffer index at PATH_BUFFER_SIZE - 1 (so ++incrementer makes it start at 0)
 
 		// send a reply, to the IP address and port that sent us the packet we just got
 		// Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
@@ -270,9 +264,17 @@ void loop(void) {
 			break;
 		case manual:
 			Serial.print("Manual mode: ");
-			pathBufferIndex = 0;
 			memcpy(&leftMotorPower, &packetBuffer[4], 1);
 			memcpy(&rightMotorPower, &packetBuffer[5], 1);
+
+			// if command is now to start recording
+				// set state to recording
+				// start buffer index at 0
+				pathBufferIndex = 0;
+			// else if command now is playback
+				// set state to playback
+				// start buffer index at PATH_BUFFER_SIZE - 1 (so ++incrementer makes it start at 0)
+
 			break;
 		case playback:
 			// instead of writing to the pathBuffer (as we do in recording)
