@@ -11,6 +11,7 @@ import socket
 import json
 import struct
 from collections import deque
+import sys
 
 class RoboNetwork(threading.Thread):
 	def __init__(self, tcp_ip, tcp_port, tcp_buff_size, udp_target_ip, udp_target_port, timeout, DEBUG = False):
@@ -119,6 +120,13 @@ class RoboNetwork(threading.Thread):
 					# Attempt to get data from connection
 					try:
 						data = self.conn.recv(self.BUFFER_SIZE)
+						#print(data)
+						#data1 = struct.unpack('l', data)
+						#print(data1)
+						#print(sys.getsizeof(data))
+						#pktFormat = 'll'
+						#pktSize = struct.calcsize(pktFormat)
+						#data1 = struct.unpack(pktFormat, data[:pktSize])
 					except socket.timeout:
 						# Continue to try again if socket timesout
 						print("Recieve timeout")

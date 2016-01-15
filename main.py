@@ -1,13 +1,13 @@
 # main.py
 # Contains class for controlling scenery robot interfacing with two other thread based classes for manual and network control
+# NEEED TO CREATE GUI SIGNALS INSTEAD OF THE MANUAL CHANGES IM DOING
 # Version - 0.1
 # Author - Brian Nguyen
 # Requires Python 2.7
 
 from PyQt4 import QtGui, QtCore # Import QtGui module
-from PyQt4.QtGui import QDialog
-from PyQt4.QtCore import QThread
-from PyQt4.QtGui import QDialog
+from PyQt4.QtCore import QThread, QString
+from PyQt4.QtGui import QDialog, QFileDialog
 import sys				# Allows for command line arguments to be passed in
 import time
 import main_window_robot		# Layout file
@@ -39,7 +39,7 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 		# Initiate controlling applications
 		self.control = RoboControl(DEBUG=True)
-		self.network = RoboNetwork('192.168.1.2', 29281, 3, '192.168.1.3', 29282, 15, DEBUG=True)
+		self.network = RoboNetwork('192.168.1.2', 29281, 16, '192.168.1.3', 29282, 15, DEBUG=True)
 		
 		# Run controlling applications
 		self.control.start()
@@ -53,6 +53,12 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		self.state = States.DISCONNECTED
 		self.controllerConnect.setEnabled(False)
 		self.controllerDisconnect.setEnabled(False)
+		self.recordPath.setEnabled(False)
+		
+		# Queue data
+		self.filename = None
+		self.queues_data = []
+		self.queue = []
 		
 		# Start main thread
 		self.mainThread = MainThread(self)
@@ -66,7 +72,95 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		self.serverStart.clicked.connect(self.connect_to_network)
 		self.ipSpecify.clicked.connect(self.handle_server_box)
 		self.controllerDisconnect.clicked.connect(self.disconnect_controller)
+		self.loadQueueSet.clicked.connect(self.open)
+		self.queueSetSave.clicked.connect(self.save)
+		self.recordPath.clicked.connect(self.record)
+		self.button_default_style_sheet = self.recordPath.styleSheet()
 		
+	def record(self):
+		if self.state != States.RECORDING:
+			print("Clearing Queue of data")
+			self.queue = []
+			self.control.recording = True
+			self.recordPath.setText("End Recording")
+			self.recordPath.setStyleSheet('QPushButton {background-color: red; color:white;}')
+		elif self.state == States.RECORDING:
+			self.control.recording = False
+			self.recordPath.setText("Record New Path")
+			self.recordPath.setStyleSheet(self.button_default_style_sheet)
+			self.queueList.addItem("Untitled")
+			self.queue.insert(0, "Untitled")
+			self.queues_data.append(self.queue)
+
+	def open(self):
+		path = (".")
+		fname = QFileDialog.getOpenFileName(self,
+				"Scenery Robot - Open", path,
+				"Queue Files (*.txt)")
+		if fname.isEmpty():
+			return
+		self.filename = fname
+		file = None
+		print("Successful open")
+		self.queues_data = self.load_queue_file(self.filename)
+		print(self.queues_data)
+		self.load_queue_window(self.queues_data)
+	
+	def save(self):
+		path = "."
+		fname = QFileDialog.getSaveFileName(self, "Scenery Robot - Save As", path,
+			"Queue Files: (*.txt)")
+		if fname.isEmpty():
+			return
+			
+		self.filename = fname
+		print('queues_data', self.queues_data)
+		self.save_new_queue(self.filename, self.queues_data)
+		
+	def save_new_queue(self, filename, queues_data, queuename="UNTITLED"):
+		"""
+		This function will open a file and append to it a new queue with a title and data.
+		@params: filename: the save file (text file where info will be stored)
+			list_to_save: the data of the new queue being saved
+			listname: the name of the queue being saved as a list
+		"""
+		print("SAVING THIS OBJECT:")
+		print(queues_data)
+		with open(filename, 'w') as f:
+			for queue in queues_data:
+				for data in queue:
+					f.write(str(data))
+					f.write('\n')
+				f.write('\n')
+			f.close()
+	
+	def load_queue_window(self, queues_data):
+		"""
+		"""
+		self.queueList.clear()
+		for queue in queues_data:
+			self.queueList.addItem(queue[0])
+		
+	def load_queue_file(self, filename):
+		"""
+		This function first reads in an entire list, line by line. It then creates a list of lists where
+		each list contains all the points in a list
+		@params: filename: the file to be loaded
+		"""
+		queue_list = []
+		with open(filename) as f:
+			i = 0
+			for line in f:
+				if not line.startswith('[') and not line.startswith('\n'):
+					queue_list.append([])
+					queue_list[i] = [line.rstrip()]
+				elif line.startswith('['):
+					queue_list[i].append(line.rstrip())
+				else:
+					i += 1
+			f.close()
+		return queue_list
+	
 	def check_events(self):
 		"""
 		Overall event checking for main thread
@@ -107,9 +201,12 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		elif self.network_connected and self.controller_connected and self.state == States.SERVER_ONLY:
 			print("Control is manual")
 			self.state = States.MANUAL
+			
 			self.robot_control_mode.setText("Robot Control: Manual Control")
 			self.controllerConnect.setEnabled(False)
 			self.controllerDisconnect.setEnabled(True)
+			self.recordPath.setEnabled(True)
+			
 		elif (self.state == States.MANUAL or self.state == States.RECORDING) and not self.controller_connected:
 			print("Control is SERVER_ONLY")
 			self.state = States.SERVER_ONLY
@@ -123,11 +220,12 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 			self.state = States.RECORDING
 			self.network.receiving = True
 			self.robot_control_mode.setText("Robot Control: Recording")
+			
 		elif self.state == States.RECORDING and not self.control.is_recording():
 			self.state = States.MANUAL
 			print("Control is manual")
+			self.network.receiving = False
 			self.robot_control_mode.setText("Robot Control: Manual Control")
-
 	
 	def handle_server_box(self):
 		"""
@@ -220,9 +318,10 @@ class MainThread(QThread):
 					continue
 				#if len(self.app.network.receive_buffer) > 0:
 				if self.app.state == States.RECORDING:
-					print("Got data!")
-					
-				
+					pass
+					#self.app.queue.append([0, 0])
+					#print("Got data!")
+						
 		# Main thread has ended, end controller and network threads if they are running
 		self.app.control.close()
 		self.app.network.close()
