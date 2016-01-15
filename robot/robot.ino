@@ -231,6 +231,14 @@ void loop(void) {
 		// read the packet into the buffer
 		Udp.read(packetBuffer, 12);
 
+		// read command from UDP packet
+			// if command is recording
+				// set state to recording
+				// start buffer index at 0
+			// if command is playback
+				// set state to playback
+				// start buffer index at PATH_BUFFER_SIZE - 1 (so ++incrementer makes it start at 0)
+
 		// send a reply, to the IP address and port that sent us the packet we just got
 		// Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
 		// Udp.write(replyBuffer);
@@ -243,8 +251,8 @@ void loop(void) {
 			Serial.print("Record mode: ");
 			memcpy(&leftMotorPower, &packetBuffer[4], 1);
 			memcpy(&rightMotorPower, &packetBuffer[5], 1);
-			pathBuffer[pathBufferIndex][0] = millis();
-			pathBuffer[pathBufferIndex][1] = millis();
+			pathBuffer[pathBufferIndex][0] = encoder1Count;
+			pathBuffer[pathBufferIndex][1] = encoder2Count;
 
 			// if buffer is full, send it off to server and clear it
 			// also start bufferIndex back at 0 to so it can be refilled
@@ -262,18 +270,45 @@ void loop(void) {
 			break;
 		case manual:
 			Serial.print("Manual mode: ");
+			pathBufferIndex = 0;
 			memcpy(&leftMotorPower, &packetBuffer[4], 1);
 			memcpy(&rightMotorPower, &packetBuffer[5], 1);
 			break;
 		case playback:
+			// instead of writing to the pathBuffer (as we do in recording)
+			// now, we read from it.
+
+			// based on
+				// current encoder ticks since playback start
+				// stated encoder ticks at this timestep in path buffer
 			Serial.print("Playback mode: ");
+
+			// if we have read until the end of the pathBuffer, ask server for more
+			// also start bufferIndex back at 0 to continue reading from top
+			if (++pathBufferIndex == PATH_BUFFER_SIZE) {
+				Serial.println("BUFFER COMPLETELY PROCESSED: REQUESTING MORE");
+				for (int i = 0; i < PATH_BUFFER_SIZE; i++) {
+					for (int j = 0; j < 2; j++) {
+						long data = 0;
+
+						// TODO: May need to switch this order
+						data |= (client.read() << 0);
+						data |= (client.read() << 8);
+						data |= (client.read() << 16);
+						data |= (client.read() << 24);
+						pathBuffer[i][j] = data;
+					}
+				}
+				pathBufferIndex = 0;
+			}
+
+			encoder1Count;
+			encoder2Count;
+
 			break;
 		default:
 			break;
 	}
-
-	// if controller gives us record signal
-		// go into state record
 
 	// update motors
 	ST.motor(1, leftMotorPower);
