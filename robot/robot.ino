@@ -245,5 +245,9 @@ void loop(void) {
 		// Udp.endPacket();
 	}
 
+	// update motor powers from controls struct
+	ST.motor(1, leftMotorPower);
+	ST.motor(2, rightMotorPower);
+
 	delay(1);
 }
