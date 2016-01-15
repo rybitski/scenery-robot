@@ -25,12 +25,15 @@ signed long encoder2Count = 0;
 
 // server stuff
 byte mac[] = {0x62, 0x02, 0x69, 0x9E, 0xC4, 0xFF};
-const int PORT = 29282;
+const int TCP_PORT = 29281;
+const int UDP_PORT = 29282;
 IPAddress ip(192, 168, 1, 3);
 EthernetClient client;
 EthernetUDP Udp;
 
-const byte HEADER_BYTE = 0xA5;
+// buffers for receiving and sending UDP data
+char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
+char replyBuffer[] = "acknowledged";       // a string to send back
 
 // datastructure to hold the controls from the server
 typedef struct {
@@ -154,7 +157,7 @@ void setup(void) {
 	Serial.begin(9600);
 
 	Serial.println("Begin setup()");
-	Serial.println("We are the server!");
+	Serial.println("We are the client.");
 
 	initEncoders();       Serial.println("Encoders initialized.");
 	clearEncoderCount();  Serial.println("Encoders cleared.");
@@ -170,22 +173,41 @@ void setup(void) {
 
 	delay(1000); // give the Ethernet sheild a second to initialize
 
-	// get and print our IP address
-	Serial.print("(Our IP: ");
-	Serial.print(Ethernet.localIP());
-	Serial.println(")");
+	// print your local IP address:
+	Serial.print("My IP address: ");
+	for (byte thisByte = 0; thisByte < 4; thisByte++) {
+	  // print the value of each byte of the IP address:
+	  Serial.print(Ethernet.localIP()[thisByte], DEC);
+	  Serial.print("."); 
+	}
 	Serial.println();
 
-	Udp.begin(PORT);
+	char serverName[] = "192.168.1.2";
+	Serial.print("Trying to connect to ");
+	Serial.print(serverName);
+	Serial.print(":");
+	Serial.print(TCP_PORT);
+	Serial.print("... ");
+	if (client.connect(serverName, TCP_PORT)) {
+		Serial.println("connected.");
+		client.print("Hi. My name is ");
+		client.print(Ethernet.localIP());
+		client.println(". Thx for letting me connect.");
+		client.println();
+	}
+	else {
+		Serial.println("failed.");
+	}
+
+	SabertoothTXPinSerial.begin(9600);
+	ST.autobaud();
+
+	Udp.begin(UDP_PORT);
 	
 	Serial.println("Done with setup()");
 }
 
 void loop(void) {
-	// Retrieve current encoder counters
-	encoder1Count = readEncoder(1);
-	encoder2Count = readEncoder(2);
-
 	// Output state to serial monitor
 	Serial.print("Enc1: ");
 	Serial.print(encoder1Count);
@@ -197,14 +219,38 @@ void loop(void) {
 	Serial.print(" rightMotorPower: ");
 	Serial.println(controls.rightMotorPower);
 
-	// send a reply, to the IP address and port that sent us the packet we just got
-	IPAddress destination(192, 168, 1, 2);
-	Udp.beginPacket(destination, PORT);
-	byte data[12];
-	unsigned long now = millis();
-	memcpy(data, &now, 4);
-	memcpy(data + 4, &encoder1Count, 4);
-	memcpy(data + 8, &encoder2Count, 4);
-	Udp.write(data, 12);
-	Udp.endPacket();
+	// Retrieve current encoder counters
+	encoder1Count = readEncoder(1);
+	encoder2Count = readEncoder(2);
+
+	// if there's data available, read a packet
+	int packetSize = Udp.parsePacket();
+	if (packetSize) {
+		// read the packet into the buffer
+		Udp.read(packetBuffer, 12);
+		// Serial.print("Our time: ");
+		// Serial.print(millis());
+		// Serial.print(" - Contents(");
+		// Serial.print(packetSize);
+		// Serial.print("):");
+		unsigned long time;
+		signed long enc1;
+		signed long enc2;
+		memcpy(&time, &packetBuffer[0], 4);
+		memcpy(&enc1, &packetBuffer[4], 4);
+		memcpy(&enc2, &packetBuffer[8], 4);
+		Serial.print("Time=");
+		Serial.print(time);
+		Serial.print(" enc1=");
+		Serial.print(enc1);
+		Serial.print(" enc2=");
+		Serial.println(enc2);
+
+		// send a reply, to the IP address and port that sent us the packet we just got
+		Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+		Udp.write(replyBuffer);
+		Udp.endPacket();
+	}
+
+	delay(1);
 }

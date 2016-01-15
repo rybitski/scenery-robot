@@ -13,8 +13,10 @@ const int W5200_CS_PIN = 10;
 
 // server stuff
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x00, 0xD4, 0xE8 };
-const int PORT = 29282;
+const int TCP_PORT = 29281;
+const int UDP_PORT = 29282;
 IPAddress ip(192, 168, 1, 2);
+EthernetServer server(TCP_PORT);
 
 // buffers for receiving and sending data
 char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
@@ -45,39 +47,45 @@ void setup() {
 	Serial.println(")");
 	Serial.println();
 
-	Udp.begin(PORT);
+	// start listening for clients
+	server.begin();
+
+	Udp.begin(UDP_PORT);
 	
 	Serial.println("Done with setup()");
 }
 
 void loop() {
-	// if there's data available, read a packet
-	int packetSize = Udp.parsePacket();
-	if (packetSize) {
-		// read the packet into the buffer
-		Udp.read(packetBuffer, 12);
-		// Serial.print("Our time: ");
-		// Serial.print(millis());
-		// Serial.print(" - Contents(");
-		// Serial.print(packetSize);
-		// Serial.print("):");
-		unsigned long time;
-		signed long enc1;
-		signed long enc2;
-		memcpy(&time, &packetBuffer[0], 4);
-		memcpy(&enc1, &packetBuffer[4], 4);
-		memcpy(&enc2, &packetBuffer[8], 4);
-		Serial.print("Time=");
-		Serial.print(time);
-		Serial.print(" enc1=");
-		Serial.print(enc1);
-		Serial.print(" enc2=");
-		Serial.println(enc2);
+	// if override button enabled
+		// send UDP command for joysticks
+	// if record button toggled
+		// send UDP toggle record command
+	// if button pressed to send path, send UDP path send command
+		// then send TCP packet(s) with path
+		// robot replays it
+	// if button pressed to receive path, send UDP path return command
+		// then receive TCP packet(s) with path
 
-		// send a reply, to the IP address and port that sent us the packet we just got
-		Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-		Udp.write(replyBuffer);
-		Udp.endPacket();
+	// Gets a client that is connected to the server and has data
+	// available for reading. The connection persists when the returned
+	// client object goes out of scope; you can close it by calling 
+	// client.stop().
+	EthernetClient client = server.available();
+
+	if (client) {
+	  	char thisChar = client.read();
+	  	Serial.print(thisChar);
 	}
-	delay(1);
+
+	IPAddress destination(192, 168, 1, 2);
+	Udp.beginPacket(destination, UDP_PORT);
+	byte data[16];
+	unsigned long now = millis();
+	unsigned long data1 = 55;
+	unsigned long data2 = 82;
+	memcpy(data, &now, 4);
+	memcpy(data + 4, &data1, 4);
+	memcpy(data + 8, &data2, 4);
+	Udp.write(data, 12);
+	Udp.endPacket();
 }
