@@ -40,6 +40,13 @@ int8_t rightMotorPower; // between -127 and 127, to match Sabertooth controller
 
 Sabertooth ST(128);
 
+const int PATH_BUFFER_SIZE = 32;
+long pathBuffer[PATH_BUFFER_SIZE][2];
+unsigned int pathBufferIndex = 0;
+
+typedef enum {manual, recording, playback} RobotState;
+RobotState robotState = recording;
+
 void initEncoders(void) {
 	// Set slave selects as outputs
 	pinMode(ENCODER_1_SS_PIN, OUTPUT);
@@ -223,21 +230,6 @@ void loop(void) {
 	if (packetSize) {
 		// read the packet into the buffer
 		Udp.read(packetBuffer, 12);
-		// Serial.print("Our time: ");
-		// Serial.print(millis());
-		// Serial.print(" - Contents(");
-		// Serial.print(packetSize);
-		// Serial.print("):");
-		unsigned long time;
-		memcpy(&time, &packetBuffer[0], 4);
-		memcpy(&leftMotorPower, &packetBuffer[4], 1);
-		memcpy(&rightMotorPower, &packetBuffer[5], 1);
-		Serial.print("Time=");
-		Serial.print(time);
-		Serial.print(" motor1=");
-		Serial.print(leftMotorPower);
-		Serial.print(" motor2=");
-		Serial.println(rightMotorPower);
 
 		// send a reply, to the IP address and port that sent us the packet we just got
 		// Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
@@ -245,9 +237,52 @@ void loop(void) {
 		// Udp.endPacket();
 	}
 
-	// update motor powers from controls struct
+	// switch statement determines how to update motors & what to do with encoder counts
+	switch (robotState) {
+		case recording:
+			Serial.print("Record mode: ");
+			memcpy(&leftMotorPower, &packetBuffer[4], 1);
+			memcpy(&rightMotorPower, &packetBuffer[5], 1);
+			pathBuffer[pathBufferIndex][0] = millis();
+			pathBuffer[pathBufferIndex][1] = millis();
+
+			// if buffer is full, send it off to server and clear it
+			// also start bufferIndex back at 0 to so it can be refilled
+			if (++pathBufferIndex == PATH_BUFFER_SIZE) {
+				Serial.println("PATH BUFFER IS FULL: SENDING OVER TCP");
+				for (int i = 0; i < PATH_BUFFER_SIZE; i++) {
+					for (int j = 0; j < 2; j++) {
+						byte data[4];
+						memcpy(data, &pathBuffer[i][j], 4);
+						client.write(data, 4); // 4 bytes per cell (longs)
+					}
+				}
+				pathBufferIndex = 0;
+			}
+			break;
+		case manual:
+			Serial.print("Manual mode: ");
+			memcpy(&leftMotorPower, &packetBuffer[4], 1);
+			memcpy(&rightMotorPower, &packetBuffer[5], 1);
+			break;
+		case playback:
+			Serial.print("Playback mode: ");
+			break;
+		default:
+			break;
+	}
+
+	// if controller gives us record signal
+		// go into state record
+
+	// update motors
 	ST.motor(1, leftMotorPower);
 	ST.motor(2, rightMotorPower);
+
+	Serial.print(" motor1=");
+	Serial.print(leftMotorPower);
+	Serial.print(" motor2=");
+	Serial.println(rightMotorPower);
 
 	delay(1);
 }

@@ -71,23 +71,33 @@ void loop() {
 	// available for reading. The connection persists when the returned
 	// client object goes out of scope; you can close it by calling 
 	// client.stop().
-	// EthernetClient client = server.available();
 
-	// if (client) {
-	//   	while(client.read());
-	// }
+	EthernetClient client = server.available();
 
-	IPAddress destination(192, 168, 1, 3);
-	Udp.beginPacket(destination, UDP_PORT);
-	byte data[16];
-	unsigned long now = millis();
-	uint8_t data1 = 0x55;
-	uint8_t data2 = 0x32;
-	memcpy(data, &now, 4);
-	memcpy(data + 4, &data1, 1);
-	memcpy(data + 5, &data2, 1);
-	Udp.write(data, 12);
-	Udp.endPacket();
+	if (client) {
+		// client.write(0xA5);
+		// client.write(103);
+		// client.write(23);
 
-	Serial.print("Sent.");
+		char thisChar = client.read();
+		Serial.print(thisChar);
+	}
+
+
+	// IPAddress destination(192, 168, 1, 3);
+	// Udp.beginPacket(destination, UDP_PORT);
+	// byte data[16];
+	// unsigned long now = millis();
+	// uint8_t data1 = 0x55;
+	// uint8_t data2 = 0x32;
+	// memcpy(data, &now, 4);
+	// memcpy(data + 4, &data1, 1);
+	// memcpy(data + 5, &data2, 1);
+	// Udp.write(data, 12);
+	// Udp.endPacket();
+
+	// Serial.print("UDP message shot at ");
+	// Serial.print(destination);
+	// Serial.print(":");
+	// Serial.println(UDP_PORT);
 }
