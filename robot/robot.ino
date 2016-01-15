@@ -47,10 +47,10 @@ unsigned int pathBufferIndex = 0;
 typedef enum {manual, recording, playback} RobotState;
 RobotState robotState = recording;
 
-const float LEFT_MOTOR_K_P = 1;
+const float LEFT_MOTOR_K_P = .01;
 const float LEFT_MOTOR_K_I = 0;
 const float LEFT_MOTOR_K_D = 0;
-const float RIGHT_MOTOR_K_P = 1;
+const float RIGHT_MOTOR_K_P = .01;
 const float RIGHT_MOTOR_K_I = 0;
 const float RIGHT_MOTOR_K_D = 0;
 signed long leftError = 0;
@@ -334,6 +334,11 @@ void loop(void) {
 			leftMotorPower = (int8_t)(LEFT_MOTOR_K_P * leftError + LEFT_MOTOR_K_I * sumLeftError + LEFT_MOTOR_K_D * diffLeftError);
 			rightMotorPower = (int8_t)(RIGHT_MOTOR_K_P * rightError + RIGHT_MOTOR_K_I * sumRightError + RIGHT_MOTOR_K_D * diffRightError);
 			
+			if (leftMotorPower > 127) leftMotorPower = 127;
+			if (rightMotorPower > 127) rightMotorPower = 127;
+			if (leftMotorPower < -127) leftMotorPower = -127;
+			if (rightMotorPower < -127) rightMotorPower = -127;
+
 			break;
 		default:
 			break;
