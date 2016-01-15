@@ -35,13 +35,8 @@ EthernetUDP Udp;
 char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
 char replyBuffer[] = "acknowledged";       // a string to send back
 
-// datastructure to hold the controls from the server
-typedef struct {
-	int8_t leftMotorPower; // between -127 and 127, to match Sabertooth controller
-	int8_t rightMotorPower; // between -127 and 127, to match Sabertooth controller
-	// byte deadManSwitch; // code to enable motors
-} Controls;
-Controls controls; // specific instance of struct
+int8_t leftMotorPower; // between -127 and 127, to match Sabertooth controller
+int8_t rightMotorPower; // between -127 and 127, to match Sabertooth controller
 
 Sabertooth ST(128);
 
@@ -215,9 +210,9 @@ void loop(void) {
 	Serial.print(encoder2Count);
 
 	Serial.print(" leftMotorPower: ");
-	Serial.print(controls.leftMotorPower);
+	Serial.print(leftMotorPower);
 	Serial.print(" rightMotorPower: ");
-	Serial.println(controls.rightMotorPower);
+	Serial.println(rightMotorPower);
 
 	// Retrieve current encoder counters
 	encoder1Count = readEncoder(1);
@@ -234,22 +229,20 @@ void loop(void) {
 		// Serial.print(packetSize);
 		// Serial.print("):");
 		unsigned long time;
-		signed long enc1;
-		signed long enc2;
 		memcpy(&time, &packetBuffer[0], 4);
-		memcpy(&enc1, &packetBuffer[4], 4);
-		memcpy(&enc2, &packetBuffer[8], 4);
+		memcpy(&leftMotorPower, &packetBuffer[4], 1);
+		memcpy(&rightMotorPower, &packetBuffer[5], 1);
 		Serial.print("Time=");
 		Serial.print(time);
-		Serial.print(" enc1=");
-		Serial.print(enc1);
-		Serial.print(" enc2=");
-		Serial.println(enc2);
+		Serial.print(" motor1=");
+		Serial.print(leftMotorPower);
+		Serial.print(" motor2=");
+		Serial.println(rightMotorPower);
 
 		// send a reply, to the IP address and port that sent us the packet we just got
-		Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-		Udp.write(replyBuffer);
-		Udp.endPacket();
+		// Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+		// Udp.write(replyBuffer);
+		// Udp.endPacket();
 	}
 
 	delay(1);
