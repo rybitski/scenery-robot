@@ -47,6 +47,21 @@ unsigned int pathBufferIndex = 0;
 typedef enum {manual, recording, playback} RobotState;
 RobotState robotState = recording;
 
+const float LEFT_MOTOR_K_P = 1;
+const float LEFT_MOTOR_K_I = 0;
+const float LEFT_MOTOR_K_D = 0;
+const float RIGHT_MOTOR_K_P = 1;
+const float RIGHT_MOTOR_K_I = 0;
+const float RIGHT_MOTOR_K_D = 0;
+signed long leftError = 0;
+signed long oldLeftError = 0;
+signed long diffLeftError = 0;
+signed long sumLeftError = 0;
+signed long rightError = 0;
+signed long oldRightError = 0;
+signed long diffRightError = 0;
+signed long sumRightError = 0;
+
 void initEncoders(void) {
 	// Set slave selects as outputs
 	pinMode(ENCODER_1_SS_PIN, OUTPUT);
@@ -304,13 +319,21 @@ void loop(void) {
 			// based on
 				// current encoder ticks since playback start
 				// stated encoder ticks at this timestep in path buffer
+
 			// set motor powers to PID
-				leftMotorPower = LEFT_MOTOR_K_P * leftError + LEFT_MOTOR_K_I * sumLeftError + 
-				rightMotorPower = RIGHT_MOTOR_K_P * 
+			oldLeftError = leftError;
+			leftError = encoder1Count - pathBuffer[pathBufferIndex][0];
+			diffLeftError = leftError - oldLeftError;
+			sumLeftError += leftError;
 
-			encoder1Count;
-			encoder2Count;
+			oldRightError = rightError;
+			rightError = encoder2Count - pathBuffer[pathBufferIndex][1];
+			diffRightError = rightError - oldRightError;
+			sumRightError += rightError;
 
+			leftMotorPower = (int8_t)(LEFT_MOTOR_K_P * leftError + LEFT_MOTOR_K_I * sumLeftError + LEFT_MOTOR_K_D * diffLeftError);
+			rightMotorPower = (int8_t)(RIGHT_MOTOR_K_P * rightError + RIGHT_MOTOR_K_I * sumRightError + RIGHT_MOTOR_K_D * diffRightError);
+			
 			break;
 		default:
 			break;
