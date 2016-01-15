@@ -10,6 +10,7 @@ import threading
 import socket
 import json
 import struct
+from collections import deque
 
 class RoboNetwork(threading.Thread):
 	def __init__(self, tcp_ip, tcp_port, tcp_buff_size, udp_target_ip, udp_target_port, timeout, DEBUG = False):
@@ -29,14 +30,16 @@ class RoboNetwork(threading.Thread):
 		# Create UDP socket
 		self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 
-		
 		# Set flags
-		self.connection_started = False
-		self.connected = False
-		self.exit = False
+		self.connection_started = False # Indicates the TCP connection is being attempted
+		self.connected = False			# Indicates the TCP connection is established
+		self.receiving = False			# Indicates data should be received in TCP connection
+		self.exit = False				# Indicates this thread should run
 		
 		# Set status string that can be passed to parent GUI
 		self.status = 'Server Connection: Not connected'
+		
+		self.receive_buffer = deque()
 
 	
 	def start_connection(self):
@@ -80,6 +83,7 @@ class RoboNetwork(threading.Thread):
 			self.conn, self.addr = self.tcp_socket.accept()
 			self.connected = True
 			self.status = 'Server Connection: Client Connected'
+			print("Client connected")
 		except socket.timeout:
 			print("Socket timeout")
 			self.status = 'Server Connection: Client timeout'
@@ -98,14 +102,10 @@ class RoboNetwork(threading.Thread):
 		"""
 		Sends command as byte string with A5 as header 
 		"""
-		data = '\xA5' + struct.pack('bb', left_value, right_value)
+		data = '\xde\xad\xbe\xef' + struct.pack('bb', left_value, right_value)
 		
 		self.udp_socket.sendto(data, (self.UDP_TARGET_IP, self.UDP_TARGET_PORT))
 		
-		#try:
-			#self.conn.send(data)
-		#except socket.error:
-		#	return
 		
 	def run(self):
 		"""
@@ -115,14 +115,16 @@ class RoboNetwork(threading.Thread):
 		# Continually run while exit flag is false
 		while not self.exit:
 			if self.connected:
-				# Attempt to get data from connection
-				try:
-					data = self.conn.recv(self.BUFFER_SIZE)
-				except socket.timeout:
-					# Continue to try again if socket timesout
-					continue
-				except socket.error:
-					continue
+				if self.receiving:
+					# Attempt to get data from connection
+					try:
+						data = self.conn.recv(self.BUFFER_SIZE)
+					except socket.timeout:
+						# Continue to try again if socket timesout
+						print("Recieve timeout")
+						continue
+					except socket.error:
+						continue
 			elif self.connection_started:
 				self.connect()
 			

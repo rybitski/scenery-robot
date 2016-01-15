@@ -24,7 +24,7 @@ def enum(*sequential, **named):
     return type('Enum', (), enums)
 	
 # Global enum variable
-States = enum('DISCONNECTED', 'MANUAL', 'RECORDING', 'PLAYBACK')
+States = enum('DISCONNECTED', 'SERVER_ONLY', 'MANUAL', 'RECORDING', 'PLAYBACK')
 	
 
 class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
@@ -51,6 +51,8 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 		# Overall state
 		self.state = States.DISCONNECTED
+		self.controllerConnect.setEnabled(False)
+		self.controllerDisconnect.setEnabled(False)
 		
 		# Start main thread
 		self.mainThread = MainThread(self)
@@ -63,13 +65,15 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		self.controllerConnect.clicked.connect(self.connect_to_controller)
 		self.serverStart.clicked.connect(self.connect_to_network)
 		self.ipSpecify.clicked.connect(self.handle_server_box)
-	
+		self.controllerDisconnect.clicked.connect(self.disconnect_controller)
+		
 	def check_events(self):
 		"""
 		Overall event checking for main thread
 		"""
 		self.check_controller_events()
 		self.check_network_events()
+		self.check_app_events()
 		
 	def check_network_events(self):
 		"""
@@ -83,11 +87,48 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		"""
 		self.check_controller_connected()
 	
-	def check_main_state_events(self):
+	def check_app_events(self):
 		"""
+		Checks variables to update app state
 		"""
-		
-		
+		# If disconnected, wait until controller and network connected to go into manual mode
+		if not self.network_connected and self.state != States.DISCONNECTED:
+			print("Robot got disconnected from network")
+			self.state == States.DISCONNECTED
+			self.robot_control_mode.setText("Robot Control: Disconnected")
+			self.controllerConnect.setEnabled(False)
+			self.controllerDisconnect.setEnabled(False)
+		elif self.network_connected and self.state == States.DISCONNECTED:
+			print("Control is SERVER_ONLY")
+			self.state = States.SERVER_ONLY
+			self.robot_control_mode.setText("Robot Control: Server Control")
+			self.controllerConnect.setEnabled(True)
+			self.controllerDisconnect.setEnabled(False)
+		elif self.network_connected and self.controller_connected and self.state == States.SERVER_ONLY:
+			print("Control is manual")
+			self.state = States.MANUAL
+			self.robot_control_mode.setText("Robot Control: Manual Control")
+			self.controllerConnect.setEnabled(False)
+			self.controllerDisconnect.setEnabled(True)
+		elif (self.state == States.MANUAL or self.state == States.RECORDING) and not self.controller_connected:
+			print("Control is SERVER_ONLY")
+			self.state = States.SERVER_ONLY
+			self.robot_control_mode.setText("Robot Control: Server Control")
+			self.controllerConnect.setEnabled(True)
+			self.controllerDisconnect.setEnabled(False)
+			self.control.recording = False # Controller got disconnected
+			
+		elif self.state == States.MANUAL and self.control.is_recording():
+			print("Control is recording")
+			self.state = States.RECORDING
+			self.network.receiving = True
+			self.robot_control_mode.setText("Robot Control: Recording")
+		elif self.state == States.RECORDING and not self.control.is_recording():
+			self.state = States.MANUAL
+			print("Control is manual")
+			self.robot_control_mode.setText("Robot Control: Manual Control")
+
+	
 	def handle_server_box(self):
 		"""
 		Handle pop up
@@ -106,16 +147,22 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		self.controller_connected = self.control.connect()	
 		return self.controller_connected
 		
+	def disconnect_controller(self):
+		self.control.disconnect()
+		
+		
 	def check_controller_connected(self):
 		"""
 		Checks if controller is connected
 		Enables or disables connected button accordingly
 		Sets label text from control status
 		"""
-		self.controller_connection_label_2.setText(self.control.status)
 		self.controller_connected = self.control.is_connected()
-		self.controllerConnect.setEnabled(not self.controller_connected)
+		#self.controllerConnect.setEnabled(not self.controller_connected)
+		self.controllerConnect.setChecked(True)
+		
 		return self.controller_connected
+		
 		
 # --------------------- NETWORK METHODS ---------------------		
 	def connect_to_network(self):
@@ -124,6 +171,7 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		"""
 		if not self.network.connection_started:
 			self.network.start_connection()
+		#self.network_connected = True
 		
 	def check_network_connected(self):
 		"""
@@ -132,6 +180,8 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		Sets label text from network status
 		"""
 		self.server_connection_label.setText(self.network.status)
+		#if self.network_connected:
+		#	self.server_connection_label.setText('Server Connection: Client Connected')
 		self.network_connected = self.network.is_connected()
 		self.serverStart.setEnabled(not self.network_connected and not self.network.connection_started)
 		return self.network_connected
@@ -158,15 +208,20 @@ class MainThread(QThread):
 	def run(self):
 		while self.running:
 			self.app.check_events()
-			
-			#if self.app.controller_connected and self.app.network_connected:
-			if self.app.controller_connected:
-				time.sleep(0.01)
-				print("sending:", self.app.control.left_value, self.app.control.right_value)
+			if self.app.state == States.MANUAL or self.app.state == States.RECORDING:
+
+			#if self.app.network_connected and self.app.controller_connected:	
+				time.sleep(0.1)
 				try:
 					self.app.network.send_command(self.app.control.left_value, self.app.control.right_value)
+					print("sending:", self.app.control.left_value, self.app.control.right_value)
 				except Exception as e:
+					print("There was an issue")
 					continue
+				#if len(self.app.network.receive_buffer) > 0:
+				if self.app.state == States.RECORDING:
+					print("Got data!")
+					
 				
 		# Main thread has ended, end controller and network threads if they are running
 		self.app.control.close()
