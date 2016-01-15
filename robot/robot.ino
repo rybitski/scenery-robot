@@ -232,7 +232,7 @@ void loop(void) {
 		Udp.read(packetBuffer, 12);
 
 		// read command from UDP packet
-			// if command is recording
+			// if command is to start recording
 				// set state to recording
 				// start buffer index at 0
 			// if command is playback
@@ -277,10 +277,7 @@ void loop(void) {
 		case playback:
 			// instead of writing to the pathBuffer (as we do in recording)
 			// now, we read from it.
-
-			// based on
-				// current encoder ticks since playback start
-				// stated encoder ticks at this timestep in path buffer
+			
 			Serial.print("Playback mode: ");
 
 			// if we have read until the end of the pathBuffer, ask server for more
@@ -301,6 +298,13 @@ void loop(void) {
 				}
 				pathBufferIndex = 0;
 			}
+
+			// based on
+				// current encoder ticks since playback start
+				// stated encoder ticks at this timestep in path buffer
+			// set motor powers to PID
+				leftMotorPower = LEFT_MOTOR_K_P * leftError + LEFT_MOTOR_K_I * sumLeftError + 
+				rightMotorPower = RIGHT_MOTOR_K_P * 
 
 			encoder1Count;
 			encoder2Count;
