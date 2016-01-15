@@ -41,6 +41,13 @@ class RoboControl(threading.Thread):
 		# Flag for running thread to exit
 		self.exit = False
 		
+		# Flag for parent app to keep track of recording
+		self.recording = False
+		
+		# Use start button as recording button. When first pressed, recording is true, when pressed again recording is false
+		self.start_last_state = False
+		self.start_curr_state = False
+		
 		# Queue of commands
 		self.commands = deque()
 		
@@ -52,6 +59,11 @@ class RoboControl(threading.Thread):
 		Returns True if controller is connected and false if disconnected
 		"""
 		return self.connected
+	
+	def is_recording(self):
+		"""
+		"""
+		return self.recording
 		
 	def connect(self):
 		"""
@@ -81,7 +93,12 @@ class RoboControl(threading.Thread):
 		""" Define event handlers for axis and buttons """
 		@self.j.event
 		def on_button(button, pressed):
-			self.exit = (button == self.get_button_num('BACK') and pressed)
+			#self.exit = (button == self.get_button_num('BACK') and pressed)
+			if button == self.get_button_num('START'):
+				self.start_curr_state = pressed
+				if self.start_curr_state != self.start_last_state and pressed:
+					self.recording = not self.recording
+				self.start_last_state = self.start_curr_state
 						
 		@self.j.event
 		def on_axis(axis, value):
@@ -114,6 +131,14 @@ class RoboControl(threading.Thread):
 			print('Using device %d' % self.j.device_number)
 			print('Press back button on controller to quit.')
 		return True
+	
+	def disconnect(self):
+		"""
+		Disconnects controller
+		"""
+		if self.debug:
+			print("Disconnecting controller")
+		self.connected = False
 	
 	def get_button_num(self, name):
 		"""
