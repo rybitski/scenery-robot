@@ -84,20 +84,20 @@ void loop() {
 	}
 
 
-	// IPAddress destination(192, 168, 1, 3);
-	// Udp.beginPacket(destination, UDP_PORT);
-	// byte data[16];
-	// unsigned long now = millis();
-	// uint8_t data1 = 0x55;
-	// uint8_t data2 = 0x32;
-	// memcpy(data, &now, 4);
-	// memcpy(data + 4, &data1, 1);
-	// memcpy(data + 5, &data2, 1);
-	// Udp.write(data, 12);
-	// Udp.endPacket();
+	IPAddress destination(192, 168, 1, 3);
+	Udp.beginPacket(destination, UDP_PORT);
+	byte data[16];
+	unsigned long now = millis();
+	uint8_t data1 = 0x55;
+	uint8_t data2 = 0x32;
+	memcpy(data, &now, 4);
+	memcpy(data + 4, &data1, 1);
+	memcpy(data + 5, &data2, 1);
+	Udp.write(data, 12);
+	Udp.endPacket();
 
-	// Serial.print("UDP message shot at ");
-	// Serial.print(destination);
-	// Serial.print(":");
-	// Serial.println(UDP_PORT);
+	Serial.print("UDP message shot at ");
+	Serial.print(destination);
+	Serial.print(":");
+	Serial.println(UDP_PORT);
 }
