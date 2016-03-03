@@ -13,6 +13,7 @@ import time
 import main_window_robot		# Layout file
 import server_connect_dialog
 import struct
+import socket
 
 from RoboControl import RoboControl
 from RoboNetwork import RoboNetwork
@@ -39,15 +40,23 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		
 		# Initiate controlling applications
 		self.control = RoboControl(DEBUG=True)
-		self.network = RoboNetwork('192.168.1.2', 29281, 16, '192.168.1.3', 29282, 15, DEBUG=True)
+		#self.network = RoboNetwork('192.168.1.2', 29281, 16, '192.168.1.3', 29282, 15, DEBUG=True)
 		
 		# Run controlling applications
 		self.control.start()
-		self.network.start()
+		#self.network.start()
 		
+		# UDP Variables
+		self.UDP_TARGET_IP = '10.0.1.3'
+		self.UDP_TARGET_PORT = 5500
+		
+		# Create UDP socket
+		self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
+
+
 		# Set state flags
 		self.controller_connected = False
-		self.network_connected = False
+		self.network_connected = True
 		
 		# Overall state
 		self.state = States.DISCONNECTED
@@ -267,9 +276,9 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		"""
 		Opens server to connect to client
 		"""
-		if not self.network.connection_started:
-			self.network.start_connection()
-		#self.network_connected = True
+		#if not self.network.connection_started:
+		#	self.network.start_connection()
+		self.network_connected = True
 		
 	def check_network_connected(self):
 		"""
@@ -277,11 +286,11 @@ class RobotApp(QtGui.QMainWindow, main_window_robot.Ui_MainWindow):
 		Enables or disables connect button accordingly
 		Sets label text from network status
 		"""
-		self.server_connection_label.setText(self.network.status)
-		#if self.network_connected:
-		#	self.server_connection_label.setText('Server Connection: Client Connected')
-		self.network_connected = self.network.is_connected()
-		self.serverStart.setEnabled(not self.network_connected and not self.network.connection_started)
+		#self.server_connection_label.setText(self.network.status)
+		if self.network_connected:
+			self.server_connection_label.setText('Server Connection: Client Connected')
+		#self.network_connected = self.network.is_connected()
+		#self.serverStart.setEnabled(not self.network_connected and not self.network.connection_started)
 		return self.network_connected
 	
 # ------------------- MAIN APP EVENTS ------------------------------
@@ -311,10 +320,13 @@ class MainThread(QThread):
 			#if self.app.network_connected and self.app.controller_connected:	
 				time.sleep(0.1)
 				try:
-					self.app.network.send_command(self.app.control.left_value, self.app.control.right_value)
+					data = '\xde\xad\xbe\xef' + struct.pack('bb', self.app.control.left_value, self.app.control.right_value)
+					self.app.udp_socket.sendto(data, (self.app.UDP_TARGET_IP, self.app.UDP_TARGET_PORT))
+					#self.app.network.send_command(self.app.control.left_value, self.app.control.right_value)
 					print("sending:", self.app.control.left_value, self.app.control.right_value)
 				except Exception as e:
 					print("There was an issue")
+					print(e)
 					continue
 				#if len(self.app.network.receive_buffer) > 0:
 				if self.app.state == States.RECORDING:
@@ -324,7 +336,7 @@ class MainThread(QThread):
 						
 		# Main thread has ended, end controller and network threads if they are running
 		self.app.control.close()
-		self.app.network.close()
+		#self.app.network.close()
 		print("Ending Main Thread")
 		
 

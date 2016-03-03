@@ -4,11 +4,10 @@
 #include <WiFiUdp.h>
 #include <Sabertooth.h>
 
-
 // ----- WIFI -----
 int status = WL_IDLE_STATUS;
-char ssid[] = ""; //  your network SSID (name) 
-char pass[] = "";    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = "TECH OFFICE"; //  your network SSID (name) 
+char pass[] = "techoffice";    // your network password (use for WPA, or use as key for WEP)
 
 // ----- UDP -----
 WiFiUDP Udp;
@@ -17,17 +16,16 @@ char packetBuffer[255]; //buffer to hold incoming packet
 char  ReplyBuffer[] = "acknowledged";       // a string to send back
 
 // ----- SABERTOOTH -----
-Sabertooth ST(128); // Address 128, use pin 1 as hardware TX - Edison does not support software serial
+Sabertooth ST(128, Serial1); // Address 128, use pin 1 as hardware TX - Edison does not support software serial
 
 // ----- MOTORS -----
-int8_t leftMotorSpeed; // between -127 and 127, to match Sabertooth controller
-int8_t rightMotorSpeed; // between -127 and 127, to match Sabertooth controller
+int8_t leftMotorSpeed = 0; // between -127 and 127, to match Sabertooth controller
+int8_t rightMotorSpeed = 0; // between -127 and 127, to match Sabertooth controller
 
 void setup() {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
-  SabertoothTXPinSerial.begin(9600);
-  ST.autobaud();
+  Serial1.begin(9600);
   
   // attempt to connect to Wifi network:
   while ( status != WL_CONNECTED) { 
@@ -64,9 +62,13 @@ void loop() {
     memcpy(&leftMotorSpeed, &packetBuffer[4], 1);
     memcpy(&rightMotorSpeed, &packetBuffer[5], 1);
   }
-
-  ST.motor(1, leftMotorSpeed);
-  ST.motor(2, rightMotorSpeed);
+    ST.motor(1, leftMotorSpeed);
+    ST.motor(2, rightMotorSpeed);
+    delay(20);
+    Serial.print(" motor1=");
+    Serial.print(leftMotorSpeed);
+    Serial.print(" motor2=");
+    Serial.println(rightMotorSpeed);
 }
 
 
