@@ -34,11 +34,13 @@ class RoboControl(threading.Thread):
 		
 		# Maps button to state, initalize as all unpressed
 		self.button_states = {
-			"A": False
+			"A": False,
 		}
 
 		self.actuator_up = False
 		self.actuator_down = False
+
+		self.joy_trigger = False
 
 		# Maps human-readable syntax to internal button number
 		self.inv_button_map = {v: k for k, v in self.button_map.items()}
@@ -150,6 +152,11 @@ class RoboControl(threading.Thread):
 					value_convert = 0
 					
 				self.right_value = value_convert
+			elif axis == 'right_trigger':
+				if value > 0.7:
+					self.joy_trigger = True
+				else:
+					self.joy_trigger = False
 		
 		if self.debug:
 			print('Using device %d' % self.j.device_number)

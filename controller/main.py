@@ -320,6 +320,13 @@ class MainThread(QThread):
 			#if self.app.network_connected and self.app.controller_connected:	
 				time.sleep(0.1)
 				try:
+					if self.app.control.joy_trigger:
+						left_val = self.app.control.left_value
+						right_val = self.app.control.right_value
+					else:
+						left_val = 0
+						right_val = 0
+
 					if self.app.control.actuator_up:
 						actuator_val = 1
 						self.app.control.actuator_up = False
@@ -328,10 +335,11 @@ class MainThread(QThread):
 						self.app.control.actuator_down = False
 					else:
 						actuator_val = 0
-					data = '\xde\xad\xbe\xef' + struct.pack('bbb', self.app.control.left_value, self.app.control.right_value, actuator_val)
+
+					data = '\xde\xad\xbe\xef' + struct.pack('bbb', left_val, right_val, actuator_val)
 					self.app.udp_socket.sendto(data, (self.app.UDP_TARGET_IP, self.app.UDP_TARGET_PORT))
 					
-					print("sending:", self.app.control.left_value, self.app.control.right_value, actuator_val)
+					print("sending:", left_val, right_val, actuator_val)
 				except Exception as e:
 					print("There was an issue")
 					print(e)
