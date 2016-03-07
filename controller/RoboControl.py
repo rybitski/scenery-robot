@@ -31,7 +31,15 @@ class RoboControl(threading.Thread):
 					"5": "START", "6": "BACK", "7": "LJOYTOGGLE", "8": "RJOYTOGGLE",
 					"9": "LB", "10": "RB", "13": "A", "14": "B", "15": "X", "16": "Y",
 				}
-				
+		
+		# Maps button to state, initalize as all unpressed
+		self.button_states = {
+			"A": False
+		}
+
+		self.actuator_up = False
+		self.actuator_down = False
+
 		# Maps human-readable syntax to internal button number
 		self.inv_button_map = {v: k for k, v in self.button_map.items()}
 		
@@ -99,6 +107,22 @@ class RoboControl(threading.Thread):
 				if self.start_curr_state != self.start_last_state and pressed:
 					self.recording = not self.recording
 				self.start_last_state = self.start_curr_state
+
+			if button == self.get_button_num('A'):
+				if pressed:
+					self.button_states['A'] = True
+				else:
+					self.button_states['A'] = False
+			elif button == self.get_button_num('DUP'):
+				if pressed:
+					if self.button_states['A']:
+						print("Actuator up")
+						self.actuator_up = True
+			elif button == self.get_button_num('DDOWN'):
+				if pressed:
+					if self.button_states['A']:
+						print('Actuator down')
+						self.actuator_down = True
 						
 		@self.j.event
 		def on_axis(axis, value):
